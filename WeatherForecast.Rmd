@@ -1,0 +1,86 @@
+---
+title: "Weather Forecast"
+output: html_document
+---
+
+```{r , include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Sun Calc
+
+```{r}
+library(weatherr)
+library(lubridate)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+```
+
+## Forecast for Aarhus
+
+```{r}
+
+df.forecast = 
+  locationforecast(lat = 56.1572,lon = 10.2107,tz = "CET")
+
+```
+
+## Temperature
+
+```{r}
+
+df.forecast %>% 
+  ggplot(.,aes(x=time,y=temperature)) +
+  geom_line(aes(color=temperature)) +
+  scale_y_continuous(limits = c(-5,30),breaks = seq(-5,30)) +
+  scale_x_datetime(date_breaks = "1 day",date_labels = "%d-%m") +
+  geom_hline(yintercept = c(-5,0,5,10,15,20,25)) +
+  theme_bw() +
+  theme(legend.position = "null",
+        axis.text.x = element_text(angle = 45, hjust=1)) 
+
+```
+
+## Wind Speed
+
+```{r}
+
+df.forecast %>% 
+  ggplot(.,aes(x=time,y=windSpeed_mps)) +
+  geom_line(aes(color=windSpeed_mps)) +
+  scale_y_continuous(limits = c(-0,20),breaks = seq(0,20)) +
+  scale_x_datetime(date_breaks = "1 day",date_labels = "%d-%m") +
+  geom_hline(yintercept = c(10)) +
+  theme_bw() +
+  theme(legend.position = "null",
+        axis.text.x = element_text(angle = 45, hjust=1)) 
+```
+
+## Cloudiness
+
+```{r}
+
+df.forecast %>% 
+  ggplot(.,aes(x=time,y=cloudiness)) +
+  geom_line(aes(color=cloudiness)) +
+  scale_x_datetime(date_breaks = "1 day",date_labels = "%d-%m") +
+  theme_bw() +
+  theme(legend.position = "null",
+        axis.text.x = element_text(angle = 45, hjust=1)) 
+```
+
+## Fog indication
+
+```{r}
+
+df.forecast %>% 
+  ggplot(.,aes(x=time,y=temperature-dewpointTemperature)) +
+  geom_line(aes(color=temperature-dewpointTemperature)) +
+  scale_x_datetime(date_breaks = "1 day",date_labels = "%d-%m") +
+  geom_hline(yintercept = c(-3,3)) +
+  theme_bw() +
+  theme(legend.position = "null",
+        axis.text.x = element_text(angle = 45, hjust=1)) 
+```

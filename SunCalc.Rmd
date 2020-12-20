@@ -1,0 +1,139 @@
+---
+title: "Sun Times"
+output: html_document
+---
+
+```{r , include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Sun Calc
+
+```{r}
+library(suncalc)
+library(lubridate)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+current_dt = as.POSIXct(format(Sys.time()),tz="CET")
+current_date = as.Date(Sys.Date(),tz="CET")
+dates_in_2021 = seq.Date(from = dmy("01-01-2021"),to = dmy("31-12-2021"),by = "1 day")
+```
+
+## Next 14 Days
+
+```{r}
+seq_next_14 = 
+  seq.Date(Sys.Date(),Sys.Date()+days(14),by = "1 day")
+
+event_order = c("dawn", 
+                "sunrise", 
+                "sunriseEnd",
+                "goldenHourEnd",
+                "goldenHour",
+                # "solarNoon", 
+                "sunsetStart", 
+                "sunset", 
+                "dusk", 
+                "night")
+event_order.labels = c("Dawn", 
+                "Sunrise", 
+                "Sunrise End",
+                "Morning Golden Hour Ends",
+                "Evening Golden Hour Start",
+                # "solarNoon", 
+                "Sunset Starts", 
+                "Sunset", 
+                "Dusk", 
+                "Night")
+### Next Week
+# df.dates.next_week =
+  suncalc::getSunlightTimes(date = seq_next_14,
+                            lat = 56.1572,
+                            lon = 10.2107,
+                            tz = "CET",
+                            keep = event_order) %>% 
+  gather(EventName,EventTime,dawn:night) %>% 
+  dplyr::mutate(EventName=factor(EventName,levels=event_order,labels=event_order.labels)) %>% 
+  ggplot(.,aes(y=date,x=EventName)) +
+  geom_tile(aes(group=EventTime,fill=EventTime)) +
+  geom_text(aes(label=strftime(EventTime,format = "%H:%M"),size=2)) +
+  theme_bw() +
+  theme(legend.position = "null",
+        axis.text.x = element_text(angle = 45, hjust=1)) +
+  labs(x=NULL,y=NULL,title = "Aarhus Next 14 Days") +
+  scale_y_date(date_breaks = "1 day",date_labels = "%m-%d")
+
+# Next Month
+```
+
+## Next 3 Months
+
+```{r}
+
+seq_next_3_months = 
+  seq.Date(Sys.Date(),Sys.Date()+months(3),by = "1 day")
+
+### Next Week
+df.dates.next_3_months =
+  suncalc::getSunlightTimes(date = seq_next_3_months,
+                            lat = 56.1572,
+                            lon = 10.2107,
+                            tz = "CET",
+                            keep = c("solarNoon", 
+                                     "sunrise", 
+                                     "sunset", 
+                                     "sunriseEnd",
+                                     "sunsetStart", 
+                                     "dawn", 
+                                     "dusk", 
+                                     "nauticalDawn", 
+                                     "nauticalDusk",
+                                     "night", 
+                                     "goldenHourEnd", 
+                                     "goldenHour")) %>% 
+  gather(EventName,EventTime,solarNoon:goldenHour) %>% 
+  group_by(date) %>% 
+  dplyr::mutate(EventTime=ymd_hms(paste0(Sys.Date()," ",strftime(EventTime,format="%H:%M:%S"))))
+
+ggplot(df.dates.next_3_months,aes(x=date,y = EventTime)) +
+  geom_line(aes(color=EventName)) +
+  theme_bw() +
+  scale_y_datetime(date_breaks = "1 hour",limits=c(ymd_hms(paste0(Sys.Date()," ","00:00:01")),ymd_hms(paste0(Sys.Date()," ","23:59:00"))))
+
+```
+
+## 2021
+
+```{r}
+### 2021 Dates
+df.dates_2021 =
+  suncalc::getSunlightTimes(date = dates_in_2021,
+                            lat = 56.1572,
+                            lon = 10.2107,
+                            tz = "CET",
+                            keep = c("solarNoon", 
+                                     "sunrise", 
+                                     "sunset", 
+                                     "sunriseEnd",
+                                     "sunsetStart", 
+                                     "dawn", 
+                                     "dusk", 
+                                     "nauticalDawn", 
+                                     "nauticalDusk",
+                                     "night", 
+                                     "goldenHourEnd", 
+                                     "goldenHour")) %>% 
+  gather(EventName,EventTime,solarNoon:goldenHour) %>% 
+  group_by(date) %>% 
+  dplyr::mutate(EventTime=difftime(EventTime,date,units = "secs")) %>% 
+  dplyr::mutate(EventTime=ymd_hms("2021-01-01 00:00:00")+seconds(EventTime))
+
+ggplot(df.dates_2021,aes(x=date,y = EventTime)) +
+  geom_point(aes(color=EventName))
+
+
+```
+
+
