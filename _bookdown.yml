@@ -1,2 +1,3 @@
 rmd_files: ["WeatherForecast.Rmd","SunCalc.Rmd"]
+output_dir: "docs"
 
