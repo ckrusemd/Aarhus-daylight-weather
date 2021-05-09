@@ -4,7 +4,7 @@ output: html_document
 ---
 
 ```{r , include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo=FALSE, results='hide', message=FALSE, warning=FALSE)
 ```
 
 # Sun Calc
@@ -35,7 +35,7 @@ df.forecast %>%
   ggplot(.,aes(x=time,y=temperature)) +
   geom_line(aes(color=temperature)) +
   scale_y_continuous(limits = c(-5,30),breaks = seq(-5,30)) +
-  scale_x_datetime(date_breaks = "1 day",date_labels = "%d-%m") +
+  scale_x_datetime(date_breaks = "1 day",date_labels = "%a %d %b") +
   geom_hline(yintercept = c(-5,0,5,10,15,20,25)) +
   theme_bw() +
   theme(legend.position = "null",
@@ -51,8 +51,9 @@ df.forecast %>%
   ggplot(.,aes(x=time,y=windSpeed_mps)) +
   geom_line(aes(color=windSpeed_mps)) +
   scale_y_continuous(limits = c(-0,20),breaks = seq(0,20)) +
-  scale_x_datetime(date_breaks = "1 day",date_labels = "%d-%m") +
+  scale_x_datetime(date_breaks = "1 day",date_labels = "%a %d %b") +
   geom_hline(yintercept = c(10)) +
+  geom_hline(yintercept = c(5)) +
   theme_bw() +
   theme(legend.position = "null",
         axis.text.x = element_text(angle = 45, hjust=1)) 
@@ -65,10 +66,12 @@ df.forecast %>%
 df.forecast %>% 
   ggplot(.,aes(x=time,y=cloudiness)) +
   geom_line(aes(color=cloudiness)) +
-  scale_x_datetime(date_breaks = "1 day",date_labels = "%d-%m") +
+  scale_x_datetime(date_breaks = "1 day",date_labels = "%a %d %b") +
   theme_bw() +
   theme(legend.position = "null",
-        axis.text.x = element_text(angle = 45, hjust=1)) 
+        axis.text.x = element_text(angle = 45, hjust=1))  +
+  scale_y_continuous(limits=c(0,100))
+  
 ```
 
 ## Fog indication
@@ -78,9 +81,102 @@ df.forecast %>%
 df.forecast %>% 
   ggplot(.,aes(x=time,y=temperature-dewpointTemperature)) +
   geom_line(aes(color=temperature-dewpointTemperature)) +
-  scale_x_datetime(date_breaks = "1 day",date_labels = "%d-%m") +
+  scale_x_datetime(date_breaks = "1 day",date_labels = "%a %d %b") +
   geom_hline(yintercept = c(-3,3)) +
   theme_bw() +
   theme(legend.position = "null",
         axis.text.x = element_text(angle = 45, hjust=1)) 
+```
+
+## Camera Weather
+
+```{r}
+
+### Next 7 Days
+seq_next_7 = 
+  seq.Date(Sys.Date(),Sys.Date()+days(4),by = "1 day")
+
+event_order = c("sunriseEnd",
+                "goldenHourEnd",
+                "goldenHour",
+                "sunset")
+event_order.labels = c("Sunrise End",
+                "Morning Golden Hour Ends",
+                "Evening Golden Hour Start",
+                "Sunset Starts")
+### Next Week
+df.dates.next_week =
+  suncalc::getSunlightTimes(date = seq_next_7,
+                            lat = 56.1572,
+                            lon = 10.2107,
+                            tz = "CET",
+                            keep = event_order) %>% 
+  rename(goldenHour_Start=sunriseEnd,
+         goldenHour_End=goldenHourEnd,
+         blueHour_Start=goldenHour,
+         blueHour_End=sunset) %>% 
+  gather(EventName,EventTime,goldenHour_Start:blueHour_End) %>% 
+  dplyr::select(date,EventName,EventTime) %>% 
+  separate(EventName,into=c("Event","Type"),sep = "_") %>% 
+  spread(Type,EventTime)
+
+
+
+### Forecast
+df.forecast %>% 
+  dplyr::mutate(Day=strftime(time,format = "%a %d %b")) %>% 
+  ggplot(.,aes(x=time,y=cloudiness)) +
+  geom_line() +
+  scale_x_datetime(date_breaks = "1 day",date_labels = "%a %d %b") +
+  theme_bw() +
+  theme(legend.position = "null",
+        axis.text.x = element_text(angle = 45, hjust=1)) +
+  geom_rect(inherit.aes = FALSE,
+            data=df.dates.next_week,
+            aes(xmin=Start,xmax=End,ymin=0,ymax=100,fill=Event),alpha=0.8) +
+  geom_text(inherit.aes = FALSE,
+         aes(x = Start,
+             y = 50,
+             label = paste0(strftime(Start,"%H:%M")," - ",strftime(End,"%H:%M")),
+             group = Event),
+         data = df.dates.next_week,angle = 90,size=3.4,
+         size = 3, vjust = 1, hjust = 0,check_overlap = FALSE,
+       ) 
+
+```
+
+
+## Best day Weather
+
+```{r}
+
+### Next Week
+df.dates.next_week =
+  df.forecast %>% 
+  filter(temperature>quantile(temperature,0.8)) %>% 
+  dplyr::mutate(time_=time+hours(1)) %>% 
+  dplyr::select(time,time_,temperature)
+
+
+### Forecast
+df.forecast %>% 
+  dplyr::mutate(Day=strftime(time,format = "%a %d %b")) %>% 
+  ggplot(.,aes(x=time,y=temperature)) +
+  geom_line() +
+  scale_x_datetime(date_breaks = "1 day",date_labels = "%a %d %b") +
+  theme_bw() +
+  theme(legend.position = "null",
+        axis.text.x = element_text(angle = 45, hjust=1)) +
+  geom_rect(inherit.aes = FALSE,
+            data=df.dates.next_week,
+            aes(xmin=time,xmax=time_,ymin=0,ymax=max(df.dates.next_week$temperature),fill=temperature),alpha=0.8) +
+  geom_text(inherit.aes = FALSE,
+         aes(x = time,
+             y = 0,
+             label = paste0(temperature)),
+         data = df.dates.next_week,angle = 90,size=3.4,
+         size = 3, vjust = 1, hjust = 0,check_overlap = FALSE,
+       ) 
+
+
 ```
