@@ -1,0 +1,12 @@
+sun-calc
+forecast-for-aarhus
+temperature
+wind-speed
+cloudiness
+fog-indication
+camera-weather
+best-day-weather
+sun-calc-1
+next-14-days
+next-3-months
+section
