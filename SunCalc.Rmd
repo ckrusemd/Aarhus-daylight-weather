@@ -1,13 +1,11 @@
 ---
-title: "Sun Times"
+title: "Sun Calculator"
 output: html_document
 ---
 
 ```{r , include=FALSE}
 knitr::opts_chunk$set(echo=FALSE, results='hide', message=FALSE, warning=FALSE)
 ```
-
-# Sun Calc
 
 ```{r }
 library(suncalc)
