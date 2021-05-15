@@ -1,5 +1,5 @@
 --- 
-title: "Aarhus-daylight-weather"
+title: "When Can We BBQ?"
 author: "Christian Kruse"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
@@ -12,7 +12,7 @@ github-repo: ckrusemd/Aarhus-daylight-weather
 description: "Aarhus Daylight and Weather"
 ---
 
-# Aarhus Daylight and Weather
+This report was compiled `r Sys.time()`.
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages

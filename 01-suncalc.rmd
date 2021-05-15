@@ -1,11 +1,13 @@
 ---
-title: "Sun Calculator"
+title: "Daylight"
 output: html_document
 ---
 
 ```{r , include=FALSE}
 knitr::opts_chunk$set(echo=FALSE, results='hide', message=FALSE, warning=FALSE)
 ```
+
+# Daylight
 
 ```{r }
 library(suncalc)
@@ -104,7 +106,7 @@ ggplot(df.dates.next_3_months,aes(x=date,y = EventTime)) +
 
 ## 2021
 
-```{r}
+```{r eval=TRUE, include=TRUE}
 ### 2021 Dates
 df.dates_2021 =
   suncalc::getSunlightTimes(date = dates_in_2021,

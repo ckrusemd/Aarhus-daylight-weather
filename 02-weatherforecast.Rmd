@@ -7,6 +7,8 @@ output: html_document
 knitr::opts_chunk$set(echo=FALSE, results='hide', message=FALSE, warning=FALSE)
 ```
 
+# Weather Forecast 
+
 ```{r}
 library(weatherr)
 library(lubridate)
@@ -142,7 +144,6 @@ df.forecast %>%
        ) 
 
 ```
-
 
 ## Best day Weather
 
