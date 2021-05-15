@@ -35,7 +35,9 @@ jobs:
 #      - name: Install Rjava before tabulizer
 #       run:  Rscript -e 'install.packages("rJava"); library(rJava); install.packages("devtools");devtools::install_github("ropensci/tabulizer", args="--no-multiarch")'
       - name: Install rmarkdown
-        run: Rscript -e 'install.packages(c("suncalc","bookdown","lubridate","dplyr","tidyr","ggplot2","weatherr","httr","jsonlite"))'
+        run: Rscript -e 'install.packages(c("suncalc","bookdown","lubridate","dplyr","tidyr","ggplot2","devtools","httr","jsonlite"))'
+      - name: Install weatherR
+        run: Rscript -e 'library(devtools); install_github("abrarwafa/weatherR")'
       - name: Render Book
         run: Rscript -e 'bookdown::render_book("index.Rmd")'
       - uses: actions/upload-artifact@v1
