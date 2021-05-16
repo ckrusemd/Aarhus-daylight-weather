@@ -21,4 +21,7 @@ knitr::write_bib(c(
 ), 'packages.bib')
 
 options(scipen=999)
+
+apikey = Sys.getenv("APIKEY") 
+
 ```
