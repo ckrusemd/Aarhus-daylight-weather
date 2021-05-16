@@ -19,6 +19,6 @@ jobs:
         run: sudo apt-get update
       - name: Echo API KEY
         #run: echo $APIKEY
-        run: Rscript -e 'print(' + $APIKEY + ')' 
+        run: Rscript -e 'print($APIKEY)' 
         env:
           APIKEY: ${{ secrets.APIKEY }}
