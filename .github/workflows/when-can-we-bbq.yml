@@ -13,6 +13,10 @@ jobs:
     #runs-on: macOS-latest
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
+      - uses: r-lib/actions/setup-r@v1
+      - name: Apt-get update
+        run: sudo apt-get update
       - name: Echo API KEY
         #run: echo $APIKEY
         run: Rscript -e 'print(' + $APIKEY + ')' 
