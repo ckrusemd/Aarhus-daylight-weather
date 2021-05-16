@@ -8,17 +8,18 @@ on:
 name: when-can-we-bbq
 # Yes
 jobs:
-  echokey:
-    name: echo key
-    #runs-on: macOS-latest
+  renderbook:
+    name: Render Book
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
       - uses: r-lib/actions/setup-r@v1
       - name: Apt-get update
         run: sudo apt-get update
-      - name: Echo API KEY
-        #run: echo $APIKEY
-        run: Rscript -e 'print($APIKEY)' 
+      - name: Set Environment Variables
+        run: echo APIKEY="$APIKEY" >> ~/.Renviron
         env:
           APIKEY: ${{ secrets.APIKEY }}
+      - name: Render Book
+        run: Rscript -e 'bookdown::render_book("index.Rmd")'
+
