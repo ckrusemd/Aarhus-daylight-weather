@@ -35,6 +35,10 @@ jobs:
           APIKEY: ${{ secrets.APIKEY }}
       - name: Render Book
         run: Rscript -e 'bookdown::render_book("index.Rmd")'
+      - uses: actions/upload-artifact@v1
+        with:
+          name: _book
+          path: _book/
 
   checkout-and-deploy:
     runs-on: ubuntu-latest
