@@ -7,21 +7,336 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(httr)
 library(jsonlite)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
 ```
 
-# Historical UV Index
+```{r}
+env_apikey = "94337b7f8e577fff69707a375f192c8d"
+```
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# Forecast by OpenWeather
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```{r}
+convert_timestamp = function(timestamp) {
+  return( as.POSIXct( timestamp ,tz = "Europe/Copenhagen",origin="1970-01-01") )
+}
+```
+
+```{r}
+convert_dataframe_timestamps = function(df) {
+  df$dt = convert_timestamp(df$dt)
+  df$sunrise = convert_timestamp(df$sunrise)
+  df$sunset = convert_timestamp(df$sunset)
+  df$moonrise = convert_timestamp(df$moonrise)
+  df$moonset = convert_timestamp(df$moonset)
+  return( df )
+}
+```
+
+```{r}
+wind_angle_to_compass = function(angle)  {
+    val = (angle + 11.25)/22.5
+    arr = c("N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW")
+    return( arr[(val %% 16)] )
+}
+```
+
+```{r}
+convert_kelvin= function(kelvin) {
+  return( kelvin - 273.15 )
+}
+```
+
 
 ```{r include=TRUE}
 
 lat = 56.1572
 lon = 10.2107
 
-res = GET(paste0("https://api.openweathermap.org/data/2.5/onecall?lat=",lat,"&lon=",lon,"&appid=94337b7f8e577fff69707a375f192c8d"))
+res = GET(paste0("https://api.openweathermap.org/data/2.5/onecall?lat=",lat,"&lon=",lon,"&appid=",env_apikey)) # Yeah, should really hide that api key.
 
-jsonlite::fromJSON( rawToChar( res$content ) )
+res_json = jsonlite::fromJSON( rawToChar( res$content ) )
+
+res_json_current = res_json$current
+res_json_daily = res_json$daily
+res_json_hourly = res_json$hourly
+res_json_minutely = res_json$minutely
+
+res_json_daily = convert_dataframe_timestamps(res_json_daily)
+res_json_current = convert_dataframe_timestamps(res_json_current)
+res_json_hourly$dt = convert_timestamp(res_json_hourly$dt)
+res_json_minutely$dt = convert_timestamp(res_json_minutely$dt)
+
+res_json_current$temp = convert_kelvin( res_json_current$temp )
+res_json_current$feels_like = convert_kelvin( res_json_current$feels_like )
+res_json_current$dew_point = convert_kelvin( res_json_current$dew_point )
+
+res_json_hourly$temp = convert_kelvin( res_json_hourly$temp )
+res_json_hourly$feels_like = convert_kelvin( res_json_hourly$feels_like )
+res_json_hourly$dew_point = convert_kelvin( res_json_hourly$dew_point )
 ```
+
+## Current Weather
+
+So you don't need to look out the window. :-)
+
+* Time: ```r res_json_current$dt ```
+* Weather Description: ```r res_json_current$weather$description ```
+* Temperature (C): ```r res_json_current$temp ```
+* Feels Like (C): ```r res_json_current$feels_like ```
+* Pressure (hPa): ```r res_json_current$pressure ```
+* Humidity: ```r res_json_current$humidity ```
+* Dew Point: ```r res_json_current$dew_point ```
+* UVI Index: ```r res_json_current$uvi ```
+* Clouds: ```r res_json_current$clouds ```
+* Visibility: ```r res_json_current$visibility ```
+* Wind Speed: ```r res_json_current$wind_speed ```
+* Wind Degree: ```r res_json_current$wind_deg ```
+* Wind Direction: ```r wind_angle_to_compass( res_json_current$wind_deg )```
+
+## Minutely Precipitation
+
+```{r}
+
+ggplot(res_json_minutely,aes(x=dt,y=precipitation)) +
+  geom_line() +
+  scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
+  theme_bw() +
+  labs(y="Estimated precipitation (mm)",x="Time")
+
+```
+
+## Hourly Forecast
+
+### Temperature
+
+```{r}
+
+ggplot(res_json_hourly,aes(x=dt,y=temp)) +
+  geom_line() +
+  scale_y_continuous(expand=c(0,0),limits=c(-5,30),breaks = seq(-5,30,by=2.5)) +
+  scale_x_datetime(date_labels = "%h:%m") +
+  theme_bw() +
+  labs(y="Estimated Temperature (C)",x="Time",title="Temperature (C)") +
+  annotate("rect",ymin = -5,ymax = 0,fill="blue",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 0,ymax = 5,fill="lightsteelblue",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 5,ymax = 10,fill="green",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 10,ymax = 15,fill="yellow",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 15,ymax = 20,fill="orange",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 20,ymax = 30,fill="red",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3)
+
+```
+
+### Pressure
+
+```{r}
+
+ggplot(res_json_hourly,aes(x=dt,y=pressure)) +
+  geom_hline(yintercept = 1013,color="black") +
+  geom_line() +
+  scale_y_continuous(expand=c(0,0),limits=c(1013-40,1013+40)) +
+  theme_bw() +
+  labs(y="Estimated Pressure (hPa)",x="Time",title="Pressure")
+
+```
+
+### Humidity
+
+```{r}
+
+ggplot(res_json_hourly,aes(x=dt,y=humidity)) +
+  geom_line() +
+  scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
+  theme_bw() +
+  labs(y="Estimated Humidity ()",x="Time",title="Humidity ()")
+
+```
+
+### UVI Index
+
+```{r}
+
+ggplot(res_json_hourly,aes(x=dt,y=uvi)) +
+  geom_line() +
+  scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
+  theme_bw() +
+  labs(y="Estimated UV Index ()",x="Time",title="UV Index") +
+  annotate("rect",ymin = 0,ymax = 2,fill="green",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 2,ymax = 6,fill="yellow",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 6,ymax = 8,fill="orange",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 8,ymax = 10,fill="red",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  geom_vline(xintercept = Sys.time()) 
+
+```
+
+### Cloud Coverage
+
+```{r}
+
+ggplot(res_json_hourly,aes(x=dt,y=clouds)) +
+  geom_line() +
+  scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
+  theme_bw() +
+  labs(y="Estimated Clouds (C)",x="Time",title="Clouds (C)") +
+  scale_x_datetime(date_labels = "%A") +
+  geom_vline(xintercept = Sys.time()) 
+
+```
+
+### Wind Speed (Avg)
+
+```{r}
+
+ggplot(res_json_hourly,aes(x=dt,y=wind_speed)) +
+  geom_line() +
+  scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
+  scale_x_datetime(date_labels = "%A") +
+  geom_vline(xintercept = Sys.time()) + 
+  theme_bw() +
+  labs(y="Wind Speed",x="Time",title="Wind Speed") +
+  geom_line(data=res_json_hourly,aes(x=dt,y=wind_gust),color="red") +
+  annotate("rect",ymin = 0,ymax = 4,fill="green",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 4,ymax = 10,fill="yellow",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 10,ymax = 20,fill="orange",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3)
+
+```
+
+
+### Wind Degree
+
+```{r}
+
+ggplot(res_json_hourly,aes(x=dt,y=wind_deg)) +
+  geom_line() +
+  scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
+  geom_vline(xintercept = Sys.time()) + 
+  theme_bw() +
+  labs(y="Wind Degree",x="Time",title="Wind Degree")
+
+```
+
+###  Probability of Precipitation
+
+```{r}
+
+ggplot(res_json_hourly,aes(x=dt,y=pop)) +
+  geom_line() +
+  scale_y_continuous(expand=c(0,0),limits=c(0,1),labels=scales::percent) +
+  scale_x_datetime(date_labels = "%A %H:%m",date_breaks = "8 hours",date_minor_breaks = "1 hour") + 
+  theme_bw() +
+  geom_vline(xintercept = Sys.time()) + 
+  labs(y="Probability of Precipitation",x="Time",title="Probability of Precipitation")
+
+```
+
+
+## Daily Forecast
+
+### UV Index
+
+```{r}
+
+ggplot(res_json_daily,aes(x=dt,y=uvi)) +
+  geom_line() +
+  scale_y_continuous(expand=c(0,0),limits=c(0,10)) +
+  annotate("rect",ymin = 0,ymax = 2,fill="green",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 2,ymax = 6,fill="yellow",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 6,ymax = 8,fill="orange",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 8,ymax = 10,fill="red",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  scale_x_datetime(date_labels = "%A",date_breaks = "1 day",date_minor_breaks = "4 hours") + 
+  theme_bw() +
+  geom_vline(xintercept = Sys.time()) + 
+  labs(y="UV Index",x="Time",title="UV Index")
+
+```
+
+### Rain
+
+```{r}
+
+ggplot(res_json_daily,aes(x=dt,y=rain)) +
+  geom_line() +
+  geom_vline(xintercept = Sys.time()) + 
+  scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
+  scale_x_datetime(date_labels = "%A",date_breaks = "1 day",date_minor_breaks = "4 hours") + 
+  theme_bw() +
+  labs(y="Rain (mm)",x="Time",title="Rain (mm)")
+
+```
+
+### Probability of Precipitation
+
+```{r}
+
+ggplot(res_json_daily,aes(x=dt,y=pop)) +
+  geom_line() +
+  geom_vline(xintercept = Sys.time()) + 
+  scale_y_continuous(expand=c(0,0),limits=c(0,NA), labels = scales::percent) +
+  scale_x_datetime(date_labels = "%A",date_breaks = "1 day",date_minor_breaks = "4 hours") + 
+  theme_bw() +
+  labs(y="Probability of Precipitation",x="Time",title="Probability of Precipitation")
+
+```
+
+
+### Clouds
+
+```{r}
+
+ggplot(res_json_daily,aes(x=dt,y=clouds)) +
+  geom_line() +
+  geom_vline(xintercept = Sys.time()) + 
+  scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
+  scale_x_datetime(date_labels = "%A",date_breaks = "1 day",date_minor_breaks = "4 hours") + 
+  theme_bw() +
+  labs(y="Cloud Coverage",x="Time",title="Cloud Coverage")
+
+```
+
+### Wind Gusts
+
+```{r}
+
+ggplot() +
+  geom_line(data = res_json_daily,aes(x=dt,y=wind_speed)) +
+  scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
+  scale_x_datetime(date_labels = "%A",date_breaks = "1 day",date_minor_breaks = "4 hours") + 
+  theme_bw() +
+  geom_vline(xintercept = Sys.time()) + 
+  geom_line(data=res_json_daily,aes(x=dt,y=wind_gust),color="red") +
+  labs(y="Wind",x="Time",title="Wind ")
+
+```
+
+### Temperature
+
+```{r}
+
+res_json_daily %>% 
+  dplyr::select(dt) %>% 
+  bind_cols(res_json_daily$temp) %>% 
+  gather(temp,value,day:morn) %>% 
+  dplyr::mutate(value=convert_kelvin(value)) %>% 
+  ggplot(.,aes(x=dt,y=value)) +
+  geom_vline(xintercept = Sys.time()) + 
+  geom_line(aes(color=temp)) +
+  scale_y_continuous(limits=c(0,25),expand=c(0,0)) +
+  scale_x_datetime(date_breaks = "1 day",date_minor_breaks = "4 hours",date_labels = "%A") +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  labs(x="Date",y="Temperature (C)")
+
+```
+
+
+
+
+
+
+
+
+
+
 
