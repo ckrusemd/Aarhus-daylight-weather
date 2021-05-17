@@ -19,14 +19,30 @@ jobs:
         run: sudo apt-get -y install libcurl4-gnutls-dev
       - name: R Package Dependencies 2
         run: sudo apt-get -y install xml2 openssl libxml2
-      - name: Install rvest
-        run: Rscript -e 'install.packages(c("rvest"))'
       - name: Enable Rjava
         run: sudo R CMD javareconf
-      - name: Install Packages
-        run: Rscript -e 'install.packages(c("suncalc","bookdown","lubridate","dplyr","tidyr","ggplot2","httr","jsonlite","devtools"))'
+      - name: Install rvest
+        run: Rscript -e 'install.packages(c("rvest"))'
+      - name: Install Package - Suncalc
+        run: Rscript -e 'install.packages(c("suncalc""))'
+      - name: Install Packages - Bookdown
+        run: Rscript -e 'install.packages(c("bookdown"))'
+      - name: Install Packages - Lubridate
+        run: Rscript -e 'install.packages(c("lubridate"))'
+      - name: Install Packages - Dplyr
+        run: Rscript -e 'install.packages(c("dplyr"))'
+      - name: Install Packages - Tidyr
+        run: Rscript -e 'install.packages(c("tidyr"))'
+      - name: Install Packages - ggplot2
+        run: Rscript -e 'install.packages(c("ggplot2"))'
+      - name: Install Packages - httr
+        run: Rscript -e 'install.packages(c("httr"))'
+      - name: Install Packages - jsonlite
+        run: Rscript -e 'install.packages(c("jsonlite"))'
+      #- name: Install Packages - devtools
+      #  run: Rscript -e 'install.packages(c("devtools"))'
       - name: Install weatherR
-        run: Rscript -e 'library(devtools); install.packages("weatherr");'
+        run: Rscript -e 'install.packages("weatherr");'
       - name: Apt-get update
         run: sudo apt-get update
       - name: Set Environment Variables
