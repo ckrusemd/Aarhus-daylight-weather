@@ -24,7 +24,7 @@ jobs:
       - name: Install rvest
         run: Rscript -e 'install.packages(c("rvest"))'
       - name: Install Package - Suncalc
-        run: Rscript -e 'install.packages(c("suncalc""))'
+        run: Rscript -e 'install.packages(c("suncalc"))'
       - name: Install Packages - Bookdown
         run: Rscript -e 'install.packages(c("bookdown"))'
       - name: Install Packages - Lubridate
