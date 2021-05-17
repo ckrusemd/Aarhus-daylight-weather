@@ -1,3 +1,2 @@
 rmd_files: ["index.Rmd","01-suncalc.rmd","02-weatherforecast.Rmd","03-openweather.Rmd"]
-output_dir: "docs"
 
