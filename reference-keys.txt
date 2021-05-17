@@ -1,0 +1,13 @@
+daylight
+next-14-days
+next-3-months
+section
+weather-forecast
+forecast-for-aarhus
+temperature
+wind-speed
+cloudiness
+fog-indication
+camera-weather
+best-day-weather
+historical-uv-index
