@@ -6,10 +6,10 @@ on:
     - cron:  '10 12 * * *' # runs every day numbers are out at 14:10
 
 name: when-can-we-bbq
-# Yes
+
 jobs:
   renderbook:
-    name: Render Book
+    name: renderbook
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -51,8 +51,8 @@ jobs:
       uses: Cecilapp/GitHub-Pages-deploy@v3
       with:
         build_dir: _book/
-        email: ${{ secrets.EMAIL }}optional
-        jekyll: no                     # optional
+        email: ${{ secrets.EMAIL }}
+        jekyll: no                     
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         EMAIL: ${{ secrets.EMAIL }} 
