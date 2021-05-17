@@ -21,8 +21,8 @@ jobs:
         run: sudo apt-get -y install xml2 openssl libxml2
       - name: Enable Rjava
         run: sudo R CMD javareconf
-      - name: Install rvest
-        run: Rscript -e 'install.packages(c("rvest"))'
+      #- name: Install rvest
+      #  run: Rscript -e 'install.packages(c("rvest"))'
       - name: Install Package - Suncalc
         run: Rscript -e 'install.packages(c("suncalc"))'
       - name: Install Packages - Bookdown
