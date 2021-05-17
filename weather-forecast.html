@@ -32,7 +32,7 @@
   
   
 <link rel="prev" href="daylight.html"/>
-<link rel="next" href="historical-uv-index.html"/>
+<link rel="next" href="forecast-by-openweather.html"/>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -147,7 +147,28 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="2.6" data-path="weather-forecast.html"><a href="weather-forecast.html#camera-weather"><i class="fa fa-check"></i><b>2.6</b> Camera Weather</a></li>
 <li class="chapter" data-level="2.7" data-path="weather-forecast.html"><a href="weather-forecast.html#best-day-weather"><i class="fa fa-check"></i><b>2.7</b> Best day Weather</a></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="historical-uv-index.html"><a href="historical-uv-index.html"><i class="fa fa-check"></i><b>3</b> Historical UV Index</a></li>
+<li class="chapter" data-level="3" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html"><i class="fa fa-check"></i><b>3</b> Forecast by OpenWeather</a><ul>
+<li class="chapter" data-level="3.1" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#current-weather"><i class="fa fa-check"></i><b>3.1</b> Current Weather</a></li>
+<li class="chapter" data-level="3.2" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#minutely-precipitation"><i class="fa fa-check"></i><b>3.2</b> Minutely Precipitation</a></li>
+<li class="chapter" data-level="3.3" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#hourly-forecast"><i class="fa fa-check"></i><b>3.3</b> Hourly Forecast</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#temperature-1"><i class="fa fa-check"></i><b>3.3.1</b> Temperature</a></li>
+<li class="chapter" data-level="3.3.2" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#pressure"><i class="fa fa-check"></i><b>3.3.2</b> Pressure</a></li>
+<li class="chapter" data-level="3.3.3" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#humidity"><i class="fa fa-check"></i><b>3.3.3</b> Humidity</a></li>
+<li class="chapter" data-level="3.3.4" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#uvi-index"><i class="fa fa-check"></i><b>3.3.4</b> UVI Index</a></li>
+<li class="chapter" data-level="3.3.5" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#cloud-coverage"><i class="fa fa-check"></i><b>3.3.5</b> Cloud Coverage</a></li>
+<li class="chapter" data-level="3.3.6" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#wind-speed-avg"><i class="fa fa-check"></i><b>3.3.6</b> Wind Speed (Avg)</a></li>
+<li class="chapter" data-level="3.3.7" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#wind-degree"><i class="fa fa-check"></i><b>3.3.7</b> Wind Degree</a></li>
+<li class="chapter" data-level="3.3.8" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#probability-of-precipitation"><i class="fa fa-check"></i><b>3.3.8</b> Probability of Precipitation</a></li>
+</ul></li>
+<li class="chapter" data-level="3.4" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#daily-forecast"><i class="fa fa-check"></i><b>3.4</b> Daily Forecast</a><ul>
+<li class="chapter" data-level="3.4.1" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#uv-index"><i class="fa fa-check"></i><b>3.4.1</b> UV Index</a></li>
+<li class="chapter" data-level="3.4.2" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#rain"><i class="fa fa-check"></i><b>3.4.2</b> Rain</a></li>
+<li class="chapter" data-level="3.4.3" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#probability-of-precipitation-1"><i class="fa fa-check"></i><b>3.4.3</b> Probability of Precipitation</a></li>
+<li class="chapter" data-level="3.4.4" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#clouds"><i class="fa fa-check"></i><b>3.4.4</b> Clouds</a></li>
+<li class="chapter" data-level="3.4.5" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#wind-gusts"><i class="fa fa-check"></i><b>3.4.5</b> Wind Gusts</a></li>
+<li class="chapter" data-level="3.4.6" data-path="forecast-by-openweather.html"><a href="forecast-by-openweather.html#temperature-2"><i class="fa fa-check"></i><b>3.4.6</b> Temperature</a></li>
+</ul></li>
+</ul></li>
 </ul>
 
       </nav>
@@ -194,6 +215,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2><span class="header-section-number">2.7</span> Best day Weather</h2>
 <p><img src="_main_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="weather-forecast.html#cb1-1"></a>env_apikey =<span class="st"> &quot;94337b7f8e577fff69707a375f192c8d&quot;</span></span></code></pre></div>
 </div>
 </div>
             </section>
@@ -202,7 +224,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
         </div>
       </div>
 <a href="daylight.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="historical-uv-index.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="forecast-by-openweather.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
