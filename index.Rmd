@@ -10,13 +10,9 @@ biblio-style: apalike
 link-citations: yes
 github-repo: ckrusemd/Aarhus-daylight-weather
 description: "Aarhus Daylight and Weather"
-knit: (function(inputFile, encoding) { 
-    rmarkdown::render(inputFile,
-                      encoding=encoding, 
-                      output_file=file.path('index.html')) })
 ---
 
-This report was compiled `r Sys.time()`.
+# When Can We BBQ?
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages
@@ -29,3 +25,5 @@ options(scipen=999)
 apikey = Sys.getenv("APIKEY") 
 
 ```
+
+This report was compiled `r Sys.time()`.
