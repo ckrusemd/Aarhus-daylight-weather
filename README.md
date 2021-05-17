@@ -7,5 +7,5 @@ A combination of several R packages for sunrise and sunset calculations and weat
 Currently based on the geocoordinates of Aarhus, Denmark. Feel free to fork and personalize to your location.
 
 ```
-[https://ckrusemd.github.io/when-can-we-bbq/](https://ckrusemd.github.io/when-can-we-bbq/)
+https://ckrusemd.github.io/when-can-we-bbq/
 ```
