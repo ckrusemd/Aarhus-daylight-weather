@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>6 Daylight | When Can We BBQ?</title>
+  <title>3 Current Weather | When Can We BBQ?</title>
   <meta name="description" content="Aarhus Daylight and Weather" />
   <meta name="generator" content="bookdown 0.22 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="6 Daylight | When Can We BBQ?" />
+  <meta property="og:title" content="3 Current Weather | When Can We BBQ?" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   <meta name="github-repo" content="ckrusemd/Aarhus-daylight-weather" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="6 Daylight | When Can We BBQ?" />
+  <meta name="twitter:title" content="3 Current Weather | When Can We BBQ?" />
   
   <meta name="twitter:description" content="Aarhus Daylight and Weather" />
   
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="daily-forecast.html"/>
-
+<link rel="prev" href="forecast-by-openweather.html"/>
+<link rel="next" href="hourly-forecast.html"/>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -178,20 +178,32 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="daylight" class="section level1">
-<h1><span class="header-section-number">6</span> Daylight</h1>
-<div id="next-14-days" class="section level2">
-<h2><span class="header-section-number">6.1</span> Next 14 Days</h2>
-<p><img src="_main_files/figure-html/unnamed-chunk-26-1.png" width="672" /></p>
-</div>
-<div id="next-3-months" class="section level2">
-<h2><span class="header-section-number">6.2</span> Next 3 Months</h2>
-<p><img src="_main_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
-</div>
-<div id="section" class="section level2">
-<h2><span class="header-section-number">6.3</span> 2021</h2>
-<p><img src="_main_files/figure-html/unnamed-chunk-28-1.png" width="672" /></p>
-
+<div id="current-weather" class="section level1">
+<h1><span class="header-section-number">3</span> Current Weather</h1>
+<p>So you don’t need to look out the window. :-)</p>
+<ul>
+<li>Time: <code>2021-05-18 20:16:25</code></li>
+<li>Weather Description: <code>broken clouds</code></li>
+<li>Temperature (C): <code>10.51</code></li>
+<li>Feels Like (C): <code>9.52</code></li>
+<li>Pressure (hPa): <code>1010</code></li>
+<li>Humidity: <code>73</code></li>
+<li>Dew Point: <code>5.88</code></li>
+<li>UVI Index: <code>0.24</code></li>
+<li>Clouds: <code>73</code></li>
+<li>Visibility: <code>10000</code></li>
+<li>Wind Speed: <code>4.01</code></li>
+<li>Wind Degree: <code>305</code></li>
+<li>Wind Direction: <code>WNW</code></li>
+</ul>
+<div id="minutely-precipitation" class="section level2">
+<h2><span class="header-section-number">3.1</span> Minutely Precipitation</h2>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="current-weather.html#cb7-1"></a><span class="kw">ggplot</span>(res_json_minutely,<span class="kw">aes</span>(<span class="dt">x=</span>dt,<span class="dt">y=</span>precipitation)) <span class="op">+</span></span>
+<span id="cb7-2"><a href="current-weather.html#cb7-2"></a><span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span></span>
+<span id="cb7-3"><a href="current-weather.html#cb7-3"></a><span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">expand=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),<span class="dt">limits=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="ot">NA</span>)) <span class="op">+</span></span>
+<span id="cb7-4"><a href="current-weather.html#cb7-4"></a><span class="st">  </span><span class="kw">theme_bw</span>() <span class="op">+</span></span>
+<span id="cb7-5"><a href="current-weather.html#cb7-5"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">y=</span><span class="st">&quot;Estimated precipitation (mm)&quot;</span>,<span class="dt">x=</span><span class="st">&quot;Time&quot;</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 </div>
 </div>
             </section>
@@ -199,8 +211,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           </div>
         </div>
       </div>
-<a href="daily-forecast.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-
+<a href="forecast-by-openweather.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="hourly-forecast.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
