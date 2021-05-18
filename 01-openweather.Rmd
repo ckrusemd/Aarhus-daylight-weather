@@ -78,7 +78,7 @@ res_json_hourly$feels_like = convert_kelvin( res_json_hourly$feels_like )
 res_json_hourly$dew_point = convert_kelvin( res_json_hourly$dew_point )
 ```
 
-## Current Weather
+# Current Weather
 
 So you don't need to look out the window. :-)
 
@@ -108,9 +108,9 @@ ggplot(res_json_minutely,aes(x=dt,y=precipitation)) +
 
 ```
 
-## Hourly Forecast
+# Hourly Forecast
 
-### Temperature
+## Temperature
 
 ```{r}
 
@@ -129,7 +129,7 @@ ggplot(res_json_hourly,aes(x=dt,y=temp)) +
 
 ```
 
-### Pressure
+## Pressure
 
 ```{r}
 
@@ -142,7 +142,7 @@ ggplot(res_json_hourly,aes(x=dt,y=pressure)) +
 
 ```
 
-### Humidity
+## Humidity
 
 ```{r}
 
@@ -154,7 +154,7 @@ ggplot(res_json_hourly,aes(x=dt,y=humidity)) +
 
 ```
 
-### UVI Index
+## UVI Index
 
 ```{r}
 
@@ -171,7 +171,7 @@ ggplot(res_json_hourly,aes(x=dt,y=uvi)) +
 
 ```
 
-### Cloud Coverage
+## Cloud Coverage
 
 ```{r}
 
@@ -185,7 +185,7 @@ ggplot(res_json_hourly,aes(x=dt,y=clouds)) +
 
 ```
 
-### Wind Speed (Avg)
+## Wind Speed (Avg)
 
 ```{r}
 
@@ -204,7 +204,7 @@ ggplot(res_json_hourly,aes(x=dt,y=wind_speed)) +
 ```
 
 
-### Wind Degree
+## Wind Degree
 
 ```{r}
 
@@ -217,7 +217,7 @@ ggplot(res_json_hourly,aes(x=dt,y=wind_deg)) +
 
 ```
 
-###  Probability of Precipitation
+##  Probability of Precipitation
 
 ```{r}
 
@@ -232,9 +232,9 @@ ggplot(res_json_hourly,aes(x=dt,y=pop)) +
 ```
 
 
-## Daily Forecast
+# Daily Forecast
 
-### UV Index
+## UV Index
 
 ```{r}
 
@@ -252,7 +252,7 @@ ggplot(res_json_daily,aes(x=dt,y=uvi)) +
 
 ```
 
-### Rain
+## Rain
 
 ```{r}
 
@@ -266,7 +266,7 @@ ggplot(res_json_daily,aes(x=dt,y=rain)) +
 
 ```
 
-### Probability of Precipitation
+## Probability of Precipitation
 
 ```{r}
 
@@ -281,7 +281,7 @@ ggplot(res_json_daily,aes(x=dt,y=pop)) +
 ```
 
 
-### Clouds
+## Clouds
 
 ```{r}
 
@@ -295,7 +295,7 @@ ggplot(res_json_daily,aes(x=dt,y=clouds)) +
 
 ```
 
-### Wind Gusts
+## Wind Gusts
 
 ```{r}
 
@@ -310,7 +310,7 @@ ggplot() +
 
 ```
 
-### Temperature
+## Temperature
 
 ```{r}
 
