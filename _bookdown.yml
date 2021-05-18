@@ -1,2 +1,2 @@
-rmd_files: ["index.Rmd","03-openweather.Rmd","01-suncalc.rmd"]
+rmd_files: ["index.Rmd","01-openweather.Rmd","02-suncalc.rmd"]
 
