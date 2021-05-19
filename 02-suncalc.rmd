@@ -7,7 +7,7 @@ output: html_document
 knitr::opts_chunk$set(echo=FALSE, results='hide', message=FALSE, warning=FALSE)
 ```
 
-# Daylight
+# Suncalc: Daylight
 
 ```{r }
 library(suncalc)
@@ -21,7 +21,7 @@ current_date = as.Date(Sys.Date(),tz="CET")
 dates_in_2021 = seq.Date(from = dmy("01-01-2021"),to = dmy("31-12-2021"),by = "1 day")
 ```
 
-## Next 14 Days
+## Aarhus: Next 14 Days
 
 ```{r}
 seq_next_14 = 
@@ -57,13 +57,13 @@ event_order.labels = c("Dawn",
   gather(EventName,EventTime,dawn:night) %>% 
   dplyr::mutate(EventName=factor(EventName,levels=event_order,labels=event_order.labels)) %>% 
   ggplot(.,aes(y=date,x=EventName)) +
-  geom_tile(aes(group=EventTime,fill=EventTime)) +
-  geom_text(aes(label=strftime(EventTime,format = "%H:%M"),size=2)) +
+  geom_tile(aes(group=EventTime,fill=EventTime),color="white") +
+  geom_text(aes(label=strftime(EventTime,format = "%H:%M")),color="white",size=3) +
   theme_bw() +
   theme(legend.position = "null",
         axis.text.x = element_text(angle = 45, hjust=1)) +
-  labs(x=NULL,y=NULL,title = "Aarhus Next 14 Days") +
-  scale_y_date(date_breaks = "1 day",date_labels = "%m-%d")
+  labs(x=NULL,y=NULL) +
+  scale_y_date(date_breaks = "1 day",date_labels = "%A %d %b")
 
 # Next Month
 ```
@@ -95,12 +95,24 @@ df.dates.next_3_months =
                                      "goldenHour")) %>% 
   gather(EventName,EventTime,solarNoon:goldenHour) %>% 
   group_by(date) %>% 
-  dplyr::mutate(EventTime=ymd_hms(paste0(Sys.Date()," ",strftime(EventTime,format="%H:%M:%S"))))
+  dplyr::mutate(EventTime=as.numeric(difftime(EventTime,ymd_hms(paste0(date," 00:00:00"),tz = "Europe/Copenhagen"),units = "hours")))
+
+min_time = min(df.dates.next_3_months$EventTime,na.rm = T)
+min_time = floor( min_time )
+
+max_time = max(df.dates.next_3_months$EventTime,na.rm = T)
+max_time = ceiling( max_time )
+
+seq(min_time,max_time)
 
 ggplot(df.dates.next_3_months,aes(x=date,y = EventTime)) +
   geom_line(aes(color=EventName)) +
   theme_bw() +
-  scale_y_datetime(date_breaks = "1 hour",limits=c(ymd_hms(paste0(Sys.Date()," ","00:00:01")),ymd_hms(paste0(Sys.Date()," ","23:59:00"))))
+  scale_x_date(date_breaks = "7 days",date_labels = "%d %b") +
+  theme(legend.position = "bottom") +
+  geom_vline(xintercept = Sys.Date()) + 
+  scale_y_continuous(breaks = seq(min_time,max_time),labels = paste0(seq(min_time,max_time) %% 24,":00")) +
+  labs(x=NULL,y=NULL)
 
 ```
 
@@ -126,13 +138,24 @@ df.dates_2021 =
                                      "goldenHourEnd", 
                                      "goldenHour")) %>% 
   gather(EventName,EventTime,solarNoon:goldenHour) %>% 
-  group_by(date) %>% 
-  dplyr::mutate(EventTime=difftime(EventTime,date,units = "secs")) %>% 
-  dplyr::mutate(EventTime=ymd_hms("2021-01-01 00:00:00")+seconds(EventTime))
+  group_by(date) %>%
+  dplyr::mutate(EventTime=as.numeric(difftime(EventTime,ymd_hms(paste0(date," 00:00:00"),tz = "Europe/Copenhagen"),units = "hours")))
+
+min_time = min(df.dates_2021$EventTime,na.rm = T)
+min_time = floor( min_time )
+
+max_time = max(df.dates_2021$EventTime,na.rm = T)
+max_time = ceiling( max_time )
+
 
 ggplot(df.dates_2021,aes(x=date,y = EventTime)) +
-  geom_point(aes(color=EventName))
-
+  scale_x_date(date_breaks = "1 month",date_labels = "%b") +
+  geom_point(aes(color=EventName)) +
+  theme_bw()+
+  theme(legend.position = "bottom") +
+  geom_vline(xintercept = Sys.Date())  +
+  scale_y_continuous(breaks = seq(min_time,max_time),labels = paste0(seq(min_time,max_time) %% 24,":00")) +
+  labs(x=NULL,y=NULL)
 
 ```
 
