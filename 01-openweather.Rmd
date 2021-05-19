@@ -12,8 +12,12 @@ library(tidyr)
 library(dplyr)
 ```
 
-```{r}
+```{r echo=FALSE}
 env_apikey = "94337b7f8e577fff69707a375f192c8d"
+```
+
+```{r}
+print( Sys.getenv("APIKEY") )
 ```
 
 # Forecast by OpenWeather
