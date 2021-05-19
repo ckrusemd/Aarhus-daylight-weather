@@ -22,8 +22,9 @@ knitr::write_bib(c(
 
 options(scipen=999)
 
-apikey = Sys.getenv("APIKEY") 
+tz = Sys.timezone()
+compile_time = as.POSIXct(Sys.time(),tz=tz)
 
 ```
 
-This report was compiled `r Sys.time()`.
+This report was compiled `r paste0(format(compile_time, format="%A %b %d %Y @ %H:%M" )," (Timezone: ",tz,")") `.

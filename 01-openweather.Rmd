@@ -94,19 +94,153 @@ So you don't need to look out the window. :-)
 * Wind Degree: ```r res_json_current$wind_deg ```
 * Wind Direction: ```r wind_angle_to_compass( res_json_current$wind_deg )```
 
-## Minutely Precipitation
+# Openweather: Today Outdoors Weather
+
+## Outdoor Gym
+
+```{r}
+
+## First get DT and score
+
+df.scores = res_json_hourly %>% 
+  filter(dt<=ymd_hms(paste0(Sys.Date()," 00:00:00"),tz = "Europe/Copenhagen")+days(1)) %>% 
+  dplyr::mutate(dt=format(dt,"%H:%M"),
+                pop=pop*100) %>% 
+  dplyr::select(dt,temp,uvi,clouds,wind_gust,pop) %>% 
+  dplyr::mutate(temp_score=scales::rescale(temp,from = c(0,25),to = c(0,100))) %>% 
+  dplyr::mutate(uvi_score=scales::rescale(uvi,from = c(0,6),to = c(0,100))) %>% 
+  dplyr::mutate(clouds_score=scales::rescale(100-clouds,from = c(0,100),to = c(0,100))) %>% 
+  dplyr::mutate(wind_gust_score=scales::rescale(10-wind_gust,from = c(0,10),to = c(0,100))) %>% 
+  dplyr::mutate(pop_score=scales::rescale(100-pop,from = c(0,100),to = c(0,100))) %>% 
+  dplyr::mutate(score=round(100*rowSums(across(contains("_score")))/500))
+
+df.dt_score = df.dt_score %>% 
+  dplyr::select(dt,score)
+
+order = c("score","temp","uvi","clouds","wind_gust","pop")
+
+# Then gather and join on score
+df.scores %>% 
+  dplyr::select(dt,score,temp,uvi,clouds,wind_gust,pop) %>% 
+  gather(metric,value,score:pop) %>% 
+  inner_join(df.dt_score, by = "dt") %>% 
+  dplyr::mutate(metric=factor(metric,levels=order)) %>% 
+  ggplot(.,aes(x=metric,y=dt)) +
+  geom_tile(aes(fill=score)) + 
+  scale_fill_gradient2(low="red",mid="white",high="green",midpoint=50,limits = c(0,100)) +
+  geom_text(aes(label=paste0(round(value,0))),color="black") +
+  theme_bw() +
+  theme(legend.position="null") +
+  labs(x=NULL,y=NULL)
+
+```
+
+## Outdoor Sun
+
+```{r}
+
+## First get DT and score
+
+df.scores = res_json_hourly %>% 
+  filter(dt<=ymd_hms(paste0(Sys.Date()," 00:00:00"),tz = "Europe/Copenhagen")+days(1)) %>% 
+  dplyr::mutate(dt=format(dt,"%H:%M"),
+                pop=pop*100) %>% 
+  dplyr::select(dt,temp,uvi,clouds,pop) %>% 
+  dplyr::mutate(temp_score=scales::rescale(temp,from = c(0,25),to = c(0,100))) %>% 
+  dplyr::mutate(uvi_score=scales::rescale(uvi,from = c(0,6),to = c(0,100))) %>% 
+  dplyr::mutate(clouds_score=scales::rescale(100-clouds,from = c(0,100),to = c(0,100))) %>% 
+  dplyr::mutate(pop_score=scales::rescale(100-pop,from = c(0,100),to = c(0,100))) %>% 
+  dplyr::mutate(score=round(100*rowSums(across(contains("_score")))/500))
+
+df.dt_score = df.dt_score %>% 
+  dplyr::select(dt,score)
+
+order = c("score","temp","uvi","clouds","pop")
+
+# Then gather and join on score
+df.scores %>% 
+  dplyr::select(dt,score,temp,uvi,clouds,pop) %>% 
+  gather(metric,value,score:pop) %>% 
+  inner_join(df.dt_score, by = "dt") %>% 
+  dplyr::mutate(metric=factor(metric,levels=order)) %>% 
+  ggplot(.,aes(x=metric,y=dt)) +
+  geom_tile(aes(fill=score)) + 
+  scale_fill_gradient2(low="red",mid="white",high="green",midpoint=50,limits = c(0,100)) +
+  geom_text(aes(label=paste0(round(value,0))),color="black") +
+  theme_bw() +
+  theme(legend.position="null") +
+  labs(x=NULL,y=NULL)
+
+```
+
+## Outdoor BBQ
+
+```{r}
+
+## First get DT and score
+
+df.scores = res_json_hourly %>% 
+  filter(dt<=ymd_hms(paste0(Sys.Date()," 00:00:00"),tz = "Europe/Copenhagen")+days(1)) %>% 
+  dplyr::mutate(dt=format(dt,"%H:%M"),
+                pop=pop*100) %>% 
+  dplyr::select(dt,temp,pop,wind_gust,wind_speed) %>% 
+  dplyr::mutate(temp_score=scales::rescale(temp,from = c(0,25),to = c(0,100))) %>% 
+  dplyr::mutate(pop_score=scales::rescale(100-pop,from = c(0,100),to = c(0,100))) %>% 
+  dplyr::mutate(wind_gust_score=scales::rescale(wind_gust,from = c(0,6),to = c(0,100))) %>% 
+  dplyr::mutate(score=round(100*rowSums(across(contains("_score")))/500))
+
+df.dt_score = df.dt_score %>% 
+  dplyr::select(dt,score)
+
+order = c("score","temp","pop","wind_gust")
+
+# Then gather and join on score
+df.scores %>% 
+  dplyr::select(dt,score,temp,pop,wind_gust) %>% 
+  gather(metric,value,score:wind_gust) %>% 
+  inner_join(df.dt_score, by = "dt") %>% 
+  dplyr::mutate(metric=factor(metric,levels=order)) %>% 
+  ggplot(.,aes(x=metric,y=dt)) +
+  geom_tile(aes(fill=score)) + 
+  scale_fill_gradient2(low="red",mid="white",high="green",midpoint=50,limits = c(0,100)) +
+  geom_text(aes(label=paste0(round(value,0))),color="black") +
+  theme_bw() +
+  theme(legend.position="null") +
+  labs(x=NULL,y=NULL)
+
+```
+
+# Openweather: Minutely Forecast
+
+## Precipitation
+
 
 ```{r}
 
 ggplot(res_json_minutely,aes(x=dt,y=precipitation)) +
-  geom_line() +
-  scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
+  geom_line(color="red",size=2) +
+  scale_y_continuous(expand=c(0,0),limits=c(0,15)) +
+  scale_x_datetime(date_breaks = "5 mins",date_labels = "%H:%M") +
+  geom_vline(xintercept = Sys.time()) +
   theme_bw() +
   labs(y="Estimated precipitation (mm)",x="Time")
 
 ```
 
 # Openweather: Hourly Forecast
+
+```{r echo=FALSE}
+
+hourly_x_datetime = scale_x_datetime(date_labels = "%A %H:%M",date_breaks = "4 hour")
+theme_hourly = theme_bw() + theme(axis.text.x = element_text(angle=45,hjust=1))
+
+date_seq = ymd_hms(paste0(seq.Date(as.Date(min(res_json_hourly$dt)),as.Date(max(res_json_hourly$dt)),by = "1 day")," 00:00:00"),tz = "Europe/Copenhagen")
+date_seq_midday = ymd_hms(paste0(seq.Date(as.Date(min(res_json_hourly$dt)),as.Date(max(res_json_hourly$dt)),by = "1 day")," 12:00:00"),tz = "Europe/Copenhagen")
+
+vlines_midnight = geom_vline(xintercept = date_seq,color="gray20")
+vlines_midday = geom_vline(xintercept = date_seq_midday,color="red")
+
+```
 
 ## Temperature
 
@@ -115,8 +249,10 @@ ggplot(res_json_minutely,aes(x=dt,y=precipitation)) +
 ggplot(res_json_hourly,aes(x=dt,y=temp)) +
   geom_line() +
   scale_y_continuous(expand=c(0,0),limits=c(-5,30),breaks = seq(-5,30,by=2.5)) +
-  scale_x_datetime(date_labels = "%h:%m") +
-  theme_bw() +
+  hourly_x_datetime +
+  theme_hourly +
+  vlines_midnight + 
+  vlines_midday +
   labs(y="Estimated Temperature (C)",x="Time",title="Temperature (C)") +
   annotate("rect",ymin = -5,ymax = 0,fill="blue",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
   annotate("rect",ymin = 0,ymax = 5,fill="lightsteelblue",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
@@ -134,8 +270,11 @@ ggplot(res_json_hourly,aes(x=dt,y=temp)) +
 ggplot(res_json_hourly,aes(x=dt,y=pressure)) +
   geom_hline(yintercept = 1013,color="black") +
   geom_line() +
+  hourly_x_datetime +
+  vlines_midnight + 
+  vlines_midday +
   scale_y_continuous(expand=c(0,0),limits=c(1013-40,1013+40)) +
-  theme_bw() +
+  theme_hourly +
   labs(y="Estimated Pressure (hPa)",x="Time",title="Pressure")
 
 ```
@@ -147,8 +286,14 @@ ggplot(res_json_hourly,aes(x=dt,y=pressure)) +
 ggplot(res_json_hourly,aes(x=dt,y=humidity)) +
   geom_line() +
   scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
-  theme_bw() +
-  labs(y="Estimated Humidity ()",x="Time",title="Humidity ()")
+  hourly_x_datetime +
+  vlines_midnight + 
+  vlines_midday +
+  theme_hourly +
+  labs(y="Estimated Humidity (%)",x="Time",title="Humidity (%)") +
+  annotate("rect",ymin = 0,ymax = 30,fill="blue",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 30,ymax = 60,fill="green",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 60,ymax = 100,fill="orange",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) 
 
 ```
 
@@ -158,8 +303,11 @@ ggplot(res_json_hourly,aes(x=dt,y=humidity)) +
 
 ggplot(res_json_hourly,aes(x=dt,y=uvi)) +
   geom_line() +
-  scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
-  theme_bw() +
+  scale_y_continuous(expand=c(0,0),limits=c(0,NA),breaks = seq(0,11,by=1),labels = scales::number_format(accuracy = 1)) +
+  hourly_x_datetime +
+  vlines_midnight + 
+  vlines_midday +
+  theme_hourly +
   labs(y="Estimated UV Index ()",x="Time",title="UV Index") +
   annotate("rect",ymin = 0,ymax = 2,fill="green",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
   annotate("rect",ymin = 2,ymax = 6,fill="yellow",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
@@ -176,24 +324,32 @@ ggplot(res_json_hourly,aes(x=dt,y=uvi)) +
 ggplot(res_json_hourly,aes(x=dt,y=clouds)) +
   geom_line() +
   scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
-  theme_bw() +
+  vlines_midnight + 
+  vlines_midday +
+  hourly_x_datetime +
+  theme_hourly +
   labs(y="Estimated Clouds (C)",x="Time",title="Clouds (C)") +
+  annotate("rect",ymin = 0,ymax = 100/3,fill="green",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 1*100/3,ymax = 2*100/3,fill="yellow",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 2*100/3,ymax = 100,fill="orange",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
   scale_x_datetime(date_labels = "%A") +
   geom_vline(xintercept = Sys.time()) 
 
 ```
 
-## Wind Speed (Avg)
+## Wind Speed
 
 ```{r}
 
 ggplot(res_json_hourly,aes(x=dt,y=wind_speed)) +
   geom_line() +
   scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
-  scale_x_datetime(date_labels = "%A") +
+  hourly_x_datetime +
+  vlines_midnight + 
+  vlines_midday +
   geom_vline(xintercept = Sys.time()) + 
-  theme_bw() +
-  labs(y="Wind Speed",x="Time",title="Wind Speed") +
+  theme_hourly +
+  labs(y="Wind Speed",x="Time",title="Wind Speed (Avg & Gust)") +
   geom_line(data=res_json_hourly,aes(x=dt,y=wind_gust),color="red") +
   annotate("rect",ymin = 0,ymax = 4,fill="green",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
   annotate("rect",ymin = 4,ymax = 10,fill="yellow",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
@@ -208,9 +364,12 @@ ggplot(res_json_hourly,aes(x=dt,y=wind_speed)) +
 
 ggplot(res_json_hourly,aes(x=dt,y=wind_deg)) +
   geom_line() +
+  vlines_midnight + 
+  vlines_midday +
   scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
+  hourly_x_datetime +
   geom_vline(xintercept = Sys.time()) + 
-  theme_bw() +
+  theme_hourly +
   labs(y="Wind Degree",x="Time",title="Wind Degree")
 
 ```
@@ -221,16 +380,35 @@ ggplot(res_json_hourly,aes(x=dt,y=wind_deg)) +
 
 ggplot(res_json_hourly,aes(x=dt,y=pop)) +
   geom_line() +
+  vlines_midnight + 
+  vlines_midday +
   scale_y_continuous(expand=c(0,0),limits=c(0,1),labels=scales::percent) +
-  scale_x_datetime(date_labels = "%A %H:%m",date_breaks = "8 hours",date_minor_breaks = "1 hour") + 
-  theme_bw() +
+  hourly_x_datetime +
+  theme_hourly +
   geom_vline(xintercept = Sys.time()) + 
-  labs(y="Probability of Precipitation",x="Time",title="Probability of Precipitation")
+  labs(y="Probability of Precipitation",x="Time",title="Probability of Precipitation") +
+  annotate("rect",ymin = 0,ymax = 0.25,fill="green",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 0.25,ymax = 0.75,fill="yellow",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3) +
+  annotate("rect",ymin = 0.75,ymax = 1,fill="orange",xmin = min(res_json_hourly$dt),xmax = max(res_json_hourly$dt),alpha=0.3)
 
 ```
 
 
 # Openweather: Daily Forecast
+
+
+```{r echo=FALSE}
+
+daily_x_datetime = scale_x_datetime(date_labels = "%A %b %d",date_breaks = "1 day")
+theme_daily = theme_bw() + theme(axis.text.x = element_text(angle=45,hjust=1))
+
+date_seq = ymd_hms(paste0(seq.Date(as.Date(min(res_json_daily$dt)),as.Date(max(res_json_daily$dt)),by = "1 day")," 00:00:00"),tz = "Europe/Copenhagen")
+date_seq_midday = ymd_hms(paste0(seq.Date(as.Date(min(res_json_daily$dt)),as.Date(max(res_json_daily$dt)),by = "1 day")," 12:00:00"),tz = "Europe/Copenhagen")
+
+vlines_midnight = geom_vline(xintercept = date_seq,color="gray60")
+vlines_midday = geom_vline(xintercept = date_seq_midday,color="red",alpha=0.3)
+
+```
 
 ## UV Index
 
@@ -238,13 +416,15 @@ ggplot(res_json_hourly,aes(x=dt,y=pop)) +
 
 ggplot(res_json_daily,aes(x=dt,y=uvi)) +
   geom_line() +
-  scale_y_continuous(expand=c(0,0),limits=c(0,10)) +
+  scale_y_continuous(expand=c(0,0),limits=c(0,11),labels = scales::number_format(accuracy = 1),breaks = seq(0,11,by=1)) +
   annotate("rect",ymin = 0,ymax = 2,fill="green",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
   annotate("rect",ymin = 2,ymax = 6,fill="yellow",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
   annotate("rect",ymin = 6,ymax = 8,fill="orange",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
-  annotate("rect",ymin = 8,ymax = 10,fill="red",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
-  scale_x_datetime(date_labels = "%A",date_breaks = "1 day",date_minor_breaks = "4 hours") + 
-  theme_bw() +
+  annotate("rect",ymin = 8,ymax = 11,fill="red",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  daily_x_datetime +
+  theme_daily +
+  vlines_midnight + 
+  vlines_midday + 
   geom_vline(xintercept = Sys.time()) + 
   labs(y="UV Index",x="Time",title="UV Index")
 
@@ -258,8 +438,10 @@ ggplot(res_json_daily,aes(x=dt,y=rain)) +
   geom_line() +
   geom_vline(xintercept = Sys.time()) + 
   scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
-  scale_x_datetime(date_labels = "%A",date_breaks = "1 day",date_minor_breaks = "4 hours") + 
-  theme_bw() +
+  daily_x_datetime +
+  theme_daily +
+  vlines_midnight + 
+  vlines_midday + 
   labs(y="Rain (mm)",x="Time",title="Rain (mm)")
 
 ```
@@ -272,9 +454,14 @@ ggplot(res_json_daily,aes(x=dt,y=pop)) +
   geom_line() +
   geom_vline(xintercept = Sys.time()) + 
   scale_y_continuous(expand=c(0,0),limits=c(0,NA), labels = scales::percent) +
-  scale_x_datetime(date_labels = "%A",date_breaks = "1 day",date_minor_breaks = "4 hours") + 
-  theme_bw() +
-  labs(y="Probability of Precipitation",x="Time",title="Probability of Precipitation")
+  daily_x_datetime +
+  theme_daily +
+  vlines_midnight + 
+  vlines_midday + 
+  labs(y="Probability of Precipitation",x="Time",title="Probability of Precipitation")+
+  annotate("rect",ymin = 0,ymax = 0.25,fill="green",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 0.25,ymax = 0.75,fill="yellow",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 0.75,ymax = 1,fill="orange",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3)
 
 ```
 
@@ -287,9 +474,14 @@ ggplot(res_json_daily,aes(x=dt,y=clouds)) +
   geom_line() +
   geom_vline(xintercept = Sys.time()) + 
   scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
-  scale_x_datetime(date_labels = "%A",date_breaks = "1 day",date_minor_breaks = "4 hours") + 
-  theme_bw() +
-  labs(y="Cloud Coverage",x="Time",title="Cloud Coverage")
+  daily_x_datetime +
+  theme_daily +
+  vlines_midnight + 
+  vlines_midday + 
+  labs(y="Cloud Coverage",x="Time",title="Cloud Coverage")+
+  annotate("rect",ymin = 0,ymax = 100/3,fill="green",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 1*100/3,ymax = 2*100/3,fill="yellow",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 2*100/3,ymax = 100,fill="orange",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) 
 
 ```
 
@@ -300,11 +492,16 @@ ggplot(res_json_daily,aes(x=dt,y=clouds)) +
 ggplot() +
   geom_line(data = res_json_daily,aes(x=dt,y=wind_speed)) +
   scale_y_continuous(expand=c(0,0),limits=c(0,NA)) +
-  scale_x_datetime(date_labels = "%A",date_breaks = "1 day",date_minor_breaks = "4 hours") + 
-  theme_bw() +
+  daily_x_datetime +
+  theme_daily +
+  vlines_midnight + 
+  vlines_midday + 
   geom_vline(xintercept = Sys.time()) + 
   geom_line(data=res_json_daily,aes(x=dt,y=wind_gust),color="red") +
-  labs(y="Wind",x="Time",title="Wind ")
+  labs(y="Wind",x="Time",title="Wind ") +
+  annotate("rect",ymin = 0,ymax = 4,fill="green",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 4,ymax = 10,fill="yellow",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 10,ymax = 20,fill="orange",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3)
 
 ```
 
@@ -320,11 +517,19 @@ res_json_daily %>%
   ggplot(.,aes(x=dt,y=value)) +
   geom_vline(xintercept = Sys.time()) + 
   geom_line(aes(color=temp)) +
-  scale_y_continuous(limits=c(0,25),expand=c(0,0)) +
-  scale_x_datetime(date_breaks = "1 day",date_minor_breaks = "4 hours",date_labels = "%A") +
-  theme_bw() +
+  scale_y_continuous(limits=c(0,30),expand=c(0,0)) +
+  daily_x_datetime +
+  theme_daily +
+  vlines_midnight + 
+  vlines_midday + 
   theme(legend.position = "bottom") +
-  labs(x="Date",y="Temperature (C)")
+  labs(x="Date",y="Temperature (C)",title = "Temperature (C)") +
+  annotate("rect",ymin = -5,ymax = 0,fill="blue",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 0,ymax = 5,fill="lightsteelblue",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 5,ymax = 10,fill="green",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 10,ymax = 15,fill="yellow",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 15,ymax = 20,fill="orange",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) +
+  annotate("rect",ymin = 20,ymax = 30,fill="red",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) 
 
 ```
 
