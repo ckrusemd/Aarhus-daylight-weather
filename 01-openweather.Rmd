@@ -4,7 +4,7 @@ output: html_document
 ---
 
 ```{r include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
 library(httr)
 library(jsonlite)
 library(ggplot2)
@@ -13,14 +13,8 @@ library(dplyr)
 ```
 
 ```{r echo=FALSE}
-env_apikey = "94337b7f8e577fff69707a375f192c8d"
+env_apikey = Sys.getenv("APIKEY")
 ```
-
-```{r}
-print( Sys.getenv("APIKEY") )
-```
-
-# Forecast by OpenWeather
 
 ```{r}
 convert_timestamp = function(timestamp) {
@@ -82,7 +76,7 @@ res_json_hourly$feels_like = convert_kelvin( res_json_hourly$feels_like )
 res_json_hourly$dew_point = convert_kelvin( res_json_hourly$dew_point )
 ```
 
-# Current Weather
+# Openweather: Current Weather
 
 So you don't need to look out the window. :-)
 
@@ -112,7 +106,7 @@ ggplot(res_json_minutely,aes(x=dt,y=precipitation)) +
 
 ```
 
-# Hourly Forecast
+# Openweather: Hourly Forecast
 
 ## Temperature
 
@@ -236,7 +230,7 @@ ggplot(res_json_hourly,aes(x=dt,y=pop)) +
 ```
 
 
-# Daily Forecast
+# Openweather: Daily Forecast
 
 ## UV Index
 
