@@ -182,13 +182,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1><span class="header-section-number">3</span> Current Weather</h1>
 <p>So you don’t need to look out the window. :-)</p>
 <ul>
-<li>Time: <code>2021-05-19 08:44:27</code></li>
+<li>Time: <code>2021-05-19 09:12:36</code></li>
 <li>Weather Description: <code>few clouds</code></li>
-<li>Temperature (C): <code>9.96</code></li>
-<li>Feels Like (C): <code>7.89</code></li>
+<li>Temperature (C): <code>10.71</code></li>
+<li>Feels Like (C): <code>9.77</code></li>
 <li>Pressure (hPa): <code>1012</code></li>
 <li>Humidity: <code>74</code></li>
-<li>Dew Point: <code>5.55</code></li>
+<li>Dew Point: <code>6.27</code></li>
 <li>UVI Index: <code>1.65</code></li>
 <li>Clouds: <code>13</code></li>
 <li>Visibility: <code>10000</code></li>
@@ -198,12 +198,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul>
 <div id="minutely-precipitation" class="section level2">
 <h2><span class="header-section-number">3.1</span> Minutely Precipitation</h2>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="current-weather.html#cb7-1"></a><span class="kw">ggplot</span>(res_json_minutely,<span class="kw">aes</span>(<span class="dt">x=</span>dt,<span class="dt">y=</span>precipitation)) <span class="op">+</span></span>
-<span id="cb7-2"><a href="current-weather.html#cb7-2"></a><span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span></span>
-<span id="cb7-3"><a href="current-weather.html#cb7-3"></a><span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">expand=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),<span class="dt">limits=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="ot">NA</span>)) <span class="op">+</span></span>
-<span id="cb7-4"><a href="current-weather.html#cb7-4"></a><span class="st">  </span><span class="kw">theme_bw</span>() <span class="op">+</span></span>
-<span id="cb7-5"><a href="current-weather.html#cb7-5"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">y=</span><span class="st">&quot;Estimated precipitation (mm)&quot;</span>,<span class="dt">x=</span><span class="st">&quot;Time&quot;</span>)</span></code></pre></div>
-<p><img src="_main_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="current-weather.html#cb8-1"></a><span class="kw">ggplot</span>(res_json_minutely,<span class="kw">aes</span>(<span class="dt">x=</span>dt,<span class="dt">y=</span>precipitation)) <span class="op">+</span></span>
+<span id="cb8-2"><a href="current-weather.html#cb8-2"></a><span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span></span>
+<span id="cb8-3"><a href="current-weather.html#cb8-3"></a><span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">expand=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>),<span class="dt">limits=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="ot">NA</span>)) <span class="op">+</span></span>
+<span id="cb8-4"><a href="current-weather.html#cb8-4"></a><span class="st">  </span><span class="kw">theme_bw</span>() <span class="op">+</span></span>
+<span id="cb8-5"><a href="current-weather.html#cb8-5"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">y=</span><span class="st">&quot;Estimated precipitation (mm)&quot;</span>,<span class="dt">x=</span><span class="st">&quot;Time&quot;</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 </div>
 </div>
             </section>
