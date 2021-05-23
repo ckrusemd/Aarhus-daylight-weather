@@ -22,9 +22,12 @@ knitr::write_bib(c(
 
 options(scipen=999)
 
-tz = Sys.timezone()
-compile_time = as.POSIXct(Sys.time(),tz=tz)
+print_danish_time = function() {
+  time = lubridate::with_tz(Sys.time(), "CET")
+  
+  paste0( strftime(time,format="%A %b")," ",scales::ordinal_format()(lubridate::day(time))," ",strftime(time,format="%Y %H:%M")," ",lubridate::tz(time))
+}
 
 ```
 
-This report was compiled `r paste0(format(compile_time, format="%A %b %d %Y @ %H:%M" )," (Timezone: ",tz,")") `.
+This report was compiled `r print_danish_time() `.
