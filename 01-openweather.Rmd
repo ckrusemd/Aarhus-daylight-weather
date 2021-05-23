@@ -97,117 +97,202 @@ So you don't need to look out the window. :-)
 
 # Openweather: Today Outdoors Weather
 
+```{r}
+
+rescale_capped = function(values,from) {
+  
+  if (from[2]>from[1]) {
+    values = pmin(from[2],values)
+    values = pmax(from[1],values)
+    return( (values-from[1])/(from[2] - from[1]) * 100 )
+  } else {
+    values = pmin(from[1],values)
+    values = pmax(from[2],values)
+    #values = from[1] - values
+    return( (values-from[1])/(from[2] - from[1]) * 100 )
+    
+  }
+}
+
+```
+
+```{r}
+
+df.scores = res_json_hourly %>% 
+  filter(dt<=ymd_hms(paste0(Sys.Date()," 00:00:00"),tz = "Europe/Copenhagen")+days(1)) %>% 
+  dplyr::mutate(dt=format(dt,"%H:%M"),
+                pop=pop*100) %>% 
+  dplyr::mutate(rain=.$rain$`1h`)
+
+df.scores$rain[is.na(df.scores$rain)] <- 0
+
+df.scores = df.scores %>% 
+  dplyr::mutate(rain_score=rescale_capped(rain,from = c(10,0))) %>% 
+  dplyr::mutate(temp_score=rescale_capped(temp,from = c(0,25))) %>% 
+  dplyr::mutate(feels_like_score=rescale_capped(feels_like,from = c(0,25))) %>% 
+  dplyr::mutate(humidity_score=rescale_capped(humidity,from = c(100,0))) %>% 
+  dplyr::mutate(uvi_score=rescale_capped(uvi,from = c(0,6))) %>% 
+  dplyr::mutate(clouds_score=rescale_capped(clouds,from = c(100,0))) %>% 
+  dplyr::mutate(wind_speed_score=rescale_capped(wind_speed,from = c(10,0))) %>% 
+  dplyr::mutate(wind_gust_score=rescale_capped(wind_gust,from = c(10,0))) %>% 
+  dplyr::mutate(pop_score=rescale_capped(pop,from = c(100,0))) 
+
+
+```
+
+```{r}
+
+draw_scorecard = function(factors) {
+  
+## First get DT and score
+
+df.score = df.scores %>% 
+  dplyr::select(dt,contains(factors),contains(paste0(factors,"_score")))
+
+num_cols = sum(grepl("_score",colnames(df.score)))
+
+df.score = df.score %>% 
+  dplyr::mutate(score = round(100*rowSums(across(contains("_score")))/(num_cols*100))) %>% 
+  dplyr::select(dt,score,contains(factors),-contains("_score"))
+
+df.dt_score = df.score %>% 
+  dplyr::select(dt,score)
+
+
+# Then gather and join on score
+df.score %>% 
+  dplyr::select(dt,score,contains(factors)) %>% 
+  gather(metric,value,score:ncol(.)) %>% 
+  inner_join(df.dt_score, by = "dt") %>% 
+  dplyr::mutate(metric=factor(metric,levels=c("score",factors))) %>% 
+  ggplot(.,aes(x=metric,y=dt)) +
+  geom_tile(aes(fill=score)) + 
+  scale_fill_gradient2(low="red",mid="white",high="green",midpoint=50,limits = c(0,100)) +
+  geom_text(aes(label=paste0(round(value,0))),color="black") +
+  theme_bw() +
+  theme(legend.position="null") +
+  labs(x=NULL,y=NULL) + 
+  scale_x_discrete(labels=c("score" = "Score 0-100",
+                            "temp" = "Temperature (C)",
+                            "uvi" = "UV Index",
+                            "clouds" = "Clouds (%)",
+                            "pop" = "Precipitation (%)",
+                            "rain" = "Rain (mm)",
+                            "wind_speed" = "Wind Speed (m/s)",
+                            "wind_gust" = "Wind Gusts (m/s)"))
+
+}
+
+```
+
 ## Outdoor Gym
 
 ```{r}
 
-## First get DT and score
-
-df.scores = res_json_hourly %>% 
-  filter(dt<=ymd_hms(paste0(Sys.Date()," 00:00:00"),tz = "Europe/Copenhagen")+days(1)) %>% 
-  dplyr::mutate(dt=format(dt,"%H:%M"),
-                pop=pop*100) %>% 
-  dplyr::select(dt,temp,uvi,clouds,wind_gust,pop) %>% 
-  dplyr::mutate(temp_score=scales::rescale(temp,from = c(0,25),to = c(0,100))) %>% 
-  dplyr::mutate(uvi_score=scales::rescale(uvi,from = c(0,6),to = c(0,100))) %>% 
-  dplyr::mutate(clouds_score=scales::rescale(100-clouds,from = c(0,100),to = c(0,100))) %>% 
-  dplyr::mutate(wind_gust_score=scales::rescale(10-wind_gust,from = c(0,10),to = c(0,100))) %>% 
-  dplyr::mutate(pop_score=scales::rescale(100-pop,from = c(0,100),to = c(0,100))) %>% 
-  dplyr::mutate(score=round(100*rowSums(across(contains("_score")))/500))
-
-df.dt_score = df.scores %>% 
-  dplyr::select(dt,score)
-
-order = c("score","temp","uvi","clouds","wind_gust","pop")
-
-# Then gather and join on score
-df.scores %>% 
-  dplyr::select(dt,score,temp,uvi,clouds,wind_gust,pop) %>% 
-  gather(metric,value,score:pop) %>% 
-  inner_join(df.dt_score, by = "dt") %>% 
-  dplyr::mutate(metric=factor(metric,levels=order)) %>% 
-  ggplot(.,aes(x=metric,y=dt)) +
-  geom_tile(aes(fill=score)) + 
-  scale_fill_gradient2(low="red",mid="white",high="green",midpoint=50,limits = c(0,100)) +
-  geom_text(aes(label=paste0(round(value,0))),color="black") +
-  theme_bw() +
-  theme(legend.position="null") +
-  labs(x=NULL,y=NULL)
+order = c("temp","uvi","clouds","pop","rain")
+draw_scorecard(order)
 
 ```
 
-## Outdoor Sun
+## Outdoor Sun Not Covered
+
+```{r}
+
+order = c("temp","uvi","clouds","pop")
+draw_scorecard(order)
+
+```
+
+## Outdoor Sun Covered
+
+```{r}
+
+order = c("temp","uvi","clouds")
+draw_scorecard(order)
+
+```
+
+## Outdoor BBQ Not Covered
+
+```{r}
+
+order = c("temp","pop","clouds","wind_speed","wind_gust")
+draw_scorecard(order)
+
+```
+
+# Openweather: Next Days' Outdoors Weather
 
 ```{r}
 
 ## First get DT and score
 
 df.scores = res_json_hourly %>% 
-  filter(dt<=ymd_hms(paste0(Sys.Date()," 00:00:00"),tz = "Europe/Copenhagen")+days(1)) %>% 
-  dplyr::mutate(dt=format(dt,"%H:%M"),
+  filter(!hour(dt) %in% c(23,seq(0,6) )) %>% 
+  dplyr::mutate(dt=format(dt,"%A %H:%M"),
                 pop=pop*100) %>% 
-  dplyr::select(dt,temp,uvi,clouds,pop) %>% 
-  dplyr::mutate(temp_score=scales::rescale(temp,from = c(0,25),to = c(0,100))) %>% 
-  dplyr::mutate(uvi_score=scales::rescale(uvi,from = c(0,6),to = c(0,100))) %>% 
-  dplyr::mutate(clouds_score=scales::rescale(100-clouds,from = c(0,100),to = c(0,100))) %>% 
-  dplyr::mutate(pop_score=scales::rescale(100-pop,from = c(0,100),to = c(0,100))) %>% 
-  dplyr::mutate(score=round(100*rowSums(across(contains("_score")))/500))
+  dplyr::mutate(rain=.$rain$`1h`)
+
+df.scores$rain[is.na(df.scores$rain)] <- 0
+
+df.scores = df.scores %>% 
+  dplyr::mutate(rain_score=rescale_capped(rain,from = c(10,0))) %>% 
+  dplyr::mutate(temp_score=rescale_capped(temp,from = c(0,25))) %>% 
+  dplyr::mutate(feels_like_score=rescale_capped(feels_like,from = c(0,25))) %>% 
+  dplyr::mutate(humidity_score=rescale_capped(humidity,from = c(100,0))) %>% 
+  dplyr::mutate(uvi_score=rescale_capped(uvi,from = c(0,6))) %>% 
+  dplyr::mutate(clouds_score=rescale_capped(clouds,from = c(100,0))) %>% 
+  dplyr::mutate(wind_speed_score=rescale_capped(wind_speed,from = c(10,0))) %>% 
+  dplyr::mutate(wind_gust_score=rescale_capped(wind_gust,from = c(10,0))) %>% 
+  dplyr::mutate(pop_score=rescale_capped(pop,from = c(100,0))) 
 
 df.dt_score = df.scores %>% 
   dplyr::select(dt,score)
 
-order = c("score","temp","uvi","clouds","pop")
-
-# Then gather and join on score
-df.scores %>% 
-  dplyr::select(dt,score,temp,uvi,clouds,pop) %>% 
-  gather(metric,value,score:pop) %>% 
-  inner_join(df.dt_score, by = "dt") %>% 
-  dplyr::mutate(metric=factor(metric,levels=order)) %>% 
-  ggplot(.,aes(x=metric,y=dt)) +
-  geom_tile(aes(fill=score)) + 
-  scale_fill_gradient2(low="red",mid="white",high="green",midpoint=50,limits = c(0,100)) +
-  geom_text(aes(label=paste0(round(value,0))),color="black") +
-  theme_bw() +
-  theme(legend.position="null") +
-  labs(x=NULL,y=NULL)
 
 ```
 
-## Outdoor BBQ
+## Outdoor Gym Not Covered
 
-```{r}
+```{r fig.height = 6, fig.width =7 }
 
-## First get DT and score
+factors = c("temp","uvi","clouds","wind_gust","pop")
+draw_scorecard(factors)
 
-df.scores = res_json_hourly %>% 
-  filter(dt<=ymd_hms(paste0(Sys.Date()," 00:00:00"),tz = "Europe/Copenhagen")+days(1)) %>% 
-  dplyr::mutate(dt=format(dt,"%H:%M"),
-                pop=pop*100) %>% 
-  dplyr::select(dt,temp,pop,wind_gust,wind_speed) %>% 
-  dplyr::mutate(temp_score=scales::rescale(temp,from = c(0,25),to = c(0,100))) %>% 
-  dplyr::mutate(pop_score=scales::rescale(100-pop,from = c(0,100),to = c(0,100))) %>% 
-  dplyr::mutate(wind_gust_score=scales::rescale(wind_gust,from = c(0,6),to = c(0,100))) %>% 
-  dplyr::mutate(score=round(100*rowSums(across(contains("_score")))/500))
+```
 
-df.dt_score = df.scores %>% 
-  dplyr::select(dt,score)
+## Outdoor Sun Not Covered
 
-order = c("score","temp","pop","wind_gust")
+```{r fig.height = 6, fig.width = 5}
 
-# Then gather and join on score
-df.scores %>% 
-  dplyr::select(dt,score,temp,pop,wind_gust) %>% 
-  gather(metric,value,score:wind_gust) %>% 
-  inner_join(df.dt_score, by = "dt") %>% 
-  dplyr::mutate(metric=factor(metric,levels=order)) %>% 
-  ggplot(.,aes(x=metric,y=dt)) +
-  geom_tile(aes(fill=score)) + 
-  scale_fill_gradient2(low="red",mid="white",high="green",midpoint=50,limits = c(0,100)) +
-  geom_text(aes(label=paste0(round(value,0))),color="black") +
-  theme_bw() +
-  theme(legend.position="null") +
-  labs(x=NULL,y=NULL)
+factors = c("temp","uvi","clouds","pop")
+draw_scorecard(factors)
+
+```
+## Outdoor Sun Covered
+
+```{r fig.height = 6, fig.width = 5}
+
+factors = c("temp","uvi","clouds")
+draw_scorecard(factors)
+
+```
+
+## Outdoor BBQ Not Covered
+
+```{r fig.height = 6, fig.width = 7}
+
+factors = c("temp","pop","wind_gust","wind_speed")
+draw_scorecard(factors)
+
+```
+
+## Outdoor BBQ Covered
+
+```{r fig.height = 6, fig.width = 7}
+
+factors = c("temp","wind_gust","wind_speed")
+draw_scorecard(factors)
 
 ```
 
@@ -534,140 +619,6 @@ res_json_daily %>%
 
 ```
 
-
-# Openweather: Next Days' Outdoors Weather
-
-## Outdoor Gym
-
-```{r fig.height = 6, fig.width = 5}
-
-## First get DT and score
-
-df.scores = res_json_hourly %>% 
-  filter(!hour(dt) %in% c(23,seq(0,6) )) %>% 
-  dplyr::mutate(dt=format(dt,"%A %H:%M"),
-                pop=pop*100) %>% 
-  dplyr::select(dt,temp,uvi,clouds,wind_gust,pop) %>% 
-  dplyr::mutate(temp_score=scales::rescale(temp,from = c(0,25),to = c(0,100))) %>% 
-  dplyr::mutate(uvi_score=scales::rescale(uvi,from = c(0,6),to = c(0,100))) %>% 
-  dplyr::mutate(clouds_score=scales::rescale(100-clouds,from = c(0,100),to = c(0,100))) %>% 
-  dplyr::mutate(wind_gust_score=scales::rescale(10-wind_gust,from = c(0,10),to = c(0,100))) %>% 
-  dplyr::mutate(pop_score=scales::rescale(100-pop,from = c(0,100),to = c(0,100))) %>% 
-  dplyr::mutate(score=round(100*rowSums(across(contains("_score")))/500))
-
-df.dt_score = df.scores %>% 
-  dplyr::select(dt,score)
-
-order = c("score","temp","uvi","clouds","wind_gust","pop")
-date_order = res_json_hourly %>% 
-  dplyr::mutate(dt=format(dt,"%A %H:%M")) %>% 
-  pull(dt) %>% 
-  rev %>% 
-  as.factor()
-
-# Then gather and join on score
-df.scores %>% 
-  dplyr::select(dt,score,temp,uvi,clouds,wind_gust,pop) %>% 
-  gather(metric,value,score:pop) %>% 
-  inner_join(df.dt_score, by = "dt") %>% 
-  dplyr::mutate(metric=factor(metric,levels=order),
-                dt=factor(dt,levels=date_order)) %>% 
-  ggplot(.,aes(x=metric,y=dt)) +
-  geom_tile(aes(fill=score)) + 
-  scale_fill_gradient2(low="red",mid="white",high="green",midpoint=50,limits = c(0,100)) +
-  geom_text(aes(label=paste0(round(value,0))),color="black",size=3) +
-  theme_bw() +
-  theme(legend.position="null") +
-  labs(x=NULL,y=NULL)
-
-```
-
-## Outdoor Sun
-
-```{r fig.height = 6, fig.width = 5}
-
-## First get DT and score
-
-df.scores = res_json_hourly %>% 
-  filter(!hour(dt) %in% c(23,seq(0,6) )) %>% 
-  dplyr::mutate(dt=format(dt,"%A %H:%M"),
-                pop=pop*100) %>% 
-  dplyr::select(dt,temp,uvi,clouds,pop) %>% 
-  dplyr::mutate(temp_score=scales::rescale(temp,from = c(0,25),to = c(0,100))) %>% 
-  dplyr::mutate(uvi_score=scales::rescale(uvi,from = c(0,6),to = c(0,100))) %>% 
-  dplyr::mutate(clouds_score=scales::rescale(100-clouds,from = c(0,100),to = c(0,100))) %>% 
-  dplyr::mutate(pop_score=scales::rescale(100-pop,from = c(0,100),to = c(0,100))) %>% 
-  dplyr::mutate(score=round(100*rowSums(across(contains("_score")))/500))
-
-df.dt_score = df.dt_score %>% 
-  dplyr::select(dt,score)
-
-order = c("score","temp","uvi","clouds","pop")
-date_order = res_json_hourly %>% 
-  dplyr::mutate(dt=format(dt,"%A %H:%M")) %>% 
-  pull(dt) %>% 
-  rev %>% 
-  as.factor()
-
-# Then gather and join on score
-df.scores %>% 
-  dplyr::select(dt,score,temp,uvi,clouds,pop) %>% 
-  gather(metric,value,score:pop) %>% 
-  inner_join(df.dt_score, by = "dt") %>% 
-  dplyr::mutate(metric=factor(metric,levels=order),
-                dt=factor(dt,levels=date_order)) %>% 
-  ggplot(.,aes(x=metric,y=dt)) +
-  geom_tile(aes(fill=score)) + 
-  scale_fill_gradient2(low="red",mid="white",high="green",midpoint=50,limits = c(0,100)) +
-  geom_text(aes(label=paste0(round(value,0))),color="black") +
-  theme_bw() +
-  theme(legend.position="null") +
-  labs(x=NULL,y=NULL)
-
-```
-
-## Outdoor BBQ
-
-```{r fig.height = 6, fig.width = 5}
-
-## First get DT and score
-
-df.scores = res_json_hourly %>% 
-  filter(!hour(dt) %in% c(23,seq(0,6) )) %>% 
-  dplyr::mutate(dt=format(dt,"%A %H:%M"),
-                pop=pop*100) %>% 
-  dplyr::select(dt,temp,pop,wind_gust,wind_speed) %>% 
-  dplyr::mutate(temp_score=scales::rescale(temp,from = c(0,25),to = c(0,100))) %>% 
-  dplyr::mutate(pop_score=scales::rescale(100-pop,from = c(0,100),to = c(0,100))) %>% 
-  dplyr::mutate(wind_gust_score=scales::rescale(wind_gust,from = c(0,6),to = c(0,100))) %>% 
-  dplyr::mutate(score=round(100*rowSums(across(contains("_score")))/500))
-
-df.dt_score = df.dt_score %>% 
-  dplyr::select(dt,score)
-
-order = c("score","temp","pop","wind_gust")
-date_order = res_json_hourly %>% 
-  dplyr::mutate(dt=format(dt,"%A %H:%M")) %>% 
-  pull(dt) %>% 
-  rev %>% 
-  as.factor()
-
-# Then gather and join on score
-df.scores %>% 
-  dplyr::select(dt,score,temp,pop,wind_gust) %>% 
-  gather(metric,value,score:wind_gust) %>% 
-  inner_join(df.dt_score, by = "dt") %>% 
-  dplyr::mutate(metric=factor(metric,levels=order),
-                dt=factor(dt,levels=date_order)) %>% 
-  ggplot(.,aes(x=metric,y=dt)) +
-  geom_tile(aes(fill=score)) + 
-  scale_fill_gradient2(low="red",mid="white",high="green",midpoint=50,limits = c(0,100)) +
-  geom_text(aes(label=paste0(round(value,0))),color="black") +
-  theme_bw() +
-  theme(legend.position="null") +
-  labs(x=NULL,y=NULL)
-
-```
 
 
 
