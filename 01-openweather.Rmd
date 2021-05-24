@@ -246,8 +246,6 @@ df.scores = df.scores %>%
   dplyr::mutate(wind_gust_score=rescale_capped(wind_gust,from = c(10,0))) %>% 
   dplyr::mutate(pop_score=rescale_capped(pop,from = c(100,0))) 
 
-df.dt_score = df.scores %>% 
-  dplyr::select(dt,score)
 
 
 ```
