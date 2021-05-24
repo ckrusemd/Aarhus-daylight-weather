@@ -2,8 +2,14 @@ when-can-we-bbq
 openweather-current-weather
 openweather-today-outdoors-weather
 outdoor-gym
-outdoor-sun
-outdoor-bbq
+outdoor-sun-not-covered
+outdoor-sun-covered
+outdoor-bbq-not-covered
+openweather-next-days-outdoors-weather
+outdoor-gym-not-covered
+outdoor-sun-not-covered-1
+outdoor-bbq-not-covered-1
+outdoor-bbq-covered
 openweather-minutely-forecast
 precipitation
 openweather-hourly-forecast
@@ -22,10 +28,6 @@ probability-of-precipitation-1
 clouds
 wind-gusts
 temperature-1
-openweather-next-days-outdoors-weather
-outdoor-gym-1
-outdoor-sun-1
-outdoor-bbq-1
 suncalc-daylight
 aarhus-next-14-days
 next-3-months
