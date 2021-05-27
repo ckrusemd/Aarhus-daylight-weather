@@ -10,6 +10,9 @@ outdoor-gym-not-covered
 outdoor-sun-not-covered-1
 outdoor-bbq-not-covered-1
 outdoor-bbq-covered
+sport-x-tan-og-træn-index
+today
+tomorrow
 openweather-minutely-forecast
 precipitation
 openweather-hourly-forecast
