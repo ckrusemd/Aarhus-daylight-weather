@@ -294,6 +294,164 @@ draw_scorecard(factors)
 
 ```
 
+# Sport X Tan og Træn Index
+
+## Today
+
+```{r}
+
+
+df.scores_sportx =  res_json_hourly %>% 
+  filter(as.Date(dt,tz="Europe/Copenhagen") == Sys.Date()) %>% 
+  dplyr::mutate(dt_label=format(dt,"%H:%M"),
+                pop=pop*100) %>% 
+  dplyr::mutate(rain=.$rain$`1h`)
+
+df.scores_sportx$rain[is.na(df.scores_sportx$rain)] <- 0
+
+df.scores_sportx = df.scores_sportx %>% 
+  dplyr::mutate(rain_score=rescale_capped(rain,from = c(10,0))) %>% 
+  dplyr::mutate(temp_score=rescale_capped(temp,from = c(0,25))) %>% 
+  dplyr::mutate(feels_like_score=rescale_capped(feels_like,from = c(0,25))) %>% 
+  dplyr::mutate(humidity_score=rescale_capped(humidity,from = c(100,0))) %>% 
+  dplyr::mutate(uvi_score=rescale_capped(uvi,from = c(0,6))) %>% 
+  dplyr::mutate(clouds_score=rescale_capped(clouds,from = c(100,0))) %>% 
+  dplyr::mutate(wind_speed_score=rescale_capped(wind_speed,from = c(10,0))) %>% 
+  dplyr::mutate(wind_gust_score=rescale_capped(wind_gust,from = c(10,0))) %>% 
+  dplyr::mutate(pop_score=rescale_capped(pop,from = c(100,0))) 
+
+factors = c("temp","uvi","wind_speed","pop","clouds")
+
+df.score = df.scores_sportx %>% 
+  dplyr::select(dt,dt_label,contains(factors),contains(paste0(factors,"_score")))
+
+num_cols = sum(grepl("_score",colnames(df.score)))
+
+df.score = df.score %>% 
+  dplyr::mutate(score = round(100*rowSums(across(contains("_score")))/(num_cols*100))) %>% 
+  dplyr::select(dt,dt_label,score,contains(factors),-contains("_score"))
+
+df.dt_score = df.score %>% 
+  dplyr::select(dt,score)
+
+df.dt_label = df.score %>% 
+  dplyr::mutate(dt_label=paste0(dt_label,"\n",round(temp,0),"°C\n")) %>% 
+  dplyr::mutate(dt_label=paste0(dt_label,"UV: ",round(uvi,0),"\n")) %>% 
+  dplyr::mutate(dt_label=paste0(dt_label,"W: ",round(wind_speed,0),"m\\s\n")) %>% 
+  dplyr::mutate(dt_label=paste0(dt_label,"Regn: ",pop,"%\n")) %>% 
+  dplyr::mutate(dt_label=paste0(dt_label,"Skydække: ",clouds,"%\n")) %>% 
+  dplyr::select(dt,dt_label)
+
+
+dt_label_vector = df.score %>% 
+  dplyr::select(dt,score) %>% 
+  inner_join(df.dt_label, by = "dt") %>% 
+  .[['dt_label']]
+
+# Then gather and join on score
+df.score %>% 
+  dplyr::select(dt,score) %>% 
+  inner_join(df.dt_label, by = "dt") %>% 
+  ggplot(.,aes(x=dt_label,y=score, group=1)) +
+  geom_line(color="white") + 
+  geom_point(color="white") + 
+  geom_text(aes(label=paste0(round(score,0)),vjust=-1),color="white") +
+  theme_bw() +
+  theme(panel.background = element_rect(fill=rgb(52/255,60/255,72/255)),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x= element_text(colour = "white"),
+        plot.title = element_text(colour = "white"),
+        axis.text.y= element_text(colour = "white"),
+        axis.line = element_line(colour = "white"),
+        plot.background = element_rect(fill = rgb(52/255,60/255,72/255))) +
+  scale_y_continuous(limits=c(0,100),expand=c(0,0)) +
+  labs(x=NULL,y=NULL,title="Sport X Tan & Træn Index") 
+
+
+```
+
+
+## Tomorrow
+
+```{r fig.width=10,fig.height=5}
+
+
+df.scores_sportx =  res_json_hourly %>% 
+  filter(as.Date(dt,tz="Europe/Copenhagen") == Sys.Date()+days(1)) %>% 
+  filter(hour(dt)>=10) %>% 
+  filter(hour(dt)<=20) %>% 
+  dplyr::mutate(dt_label=format(dt,"%H:%M"),
+                pop=pop*100) %>% 
+  dplyr::mutate(rain=.$rain$`1h`)
+
+df.scores_sportx$rain[is.na(df.scores_sportx$rain)] <- 0
+
+df.scores_sportx = df.scores_sportx %>% 
+  dplyr::mutate(rain_score=rescale_capped(rain,from = c(10,0))) %>% 
+  dplyr::mutate(temp_score=rescale_capped(temp,from = c(0,25))) %>% 
+  dplyr::mutate(feels_like_score=rescale_capped(feels_like,from = c(0,25))) %>% 
+  dplyr::mutate(humidity_score=rescale_capped(humidity,from = c(100,0))) %>% 
+  dplyr::mutate(uvi_score=rescale_capped(uvi,from = c(0,6))) %>% 
+  dplyr::mutate(clouds_score=rescale_capped(clouds,from = c(100,0))) %>% 
+  dplyr::mutate(wind_speed_score=rescale_capped(wind_speed,from = c(10,0))) %>% 
+  dplyr::mutate(wind_gust_score=rescale_capped(wind_gust,from = c(10,0))) %>% 
+  dplyr::mutate(pop_score=rescale_capped(pop,from = c(100,0))) 
+
+factors = c("temp","uvi","wind_speed","pop","clouds")
+
+df.score = df.scores_sportx %>% 
+  dplyr::select(dt,dt_label,contains(factors),contains(paste0(factors,"_score")))
+
+num_cols = sum(grepl("_score",colnames(df.score)))
+
+df.score = df.score %>% 
+  dplyr::mutate(score = round(100*rowSums(across(contains("_score")))/(num_cols*100))) %>% 
+  dplyr::select(dt,dt_label,score,contains(factors),-contains("_score"))
+
+df.dt_score = df.score %>% 
+  dplyr::select(dt,score)
+
+df.dt_label = df.score %>% 
+  dplyr::mutate(dt_label=paste0(dt_label,"\n",round(temp,0),"°C\n")) %>% 
+  dplyr::mutate(dt_label=paste0(dt_label,"UV: ",round(uvi,0),"\n")) %>% 
+  dplyr::mutate(dt_label=paste0(dt_label,"W: ",round(wind_speed,0),"m/s\n")) %>% 
+  dplyr::mutate(dt_label=paste0(dt_label,"Regn: ",pop,"%\n")) %>% 
+  dplyr::mutate(dt_label=paste0(dt_label,"Sky: ",clouds,"%\n")) %>% 
+  dplyr::select(dt,dt_label)
+
+
+dt_label_vector = df.score %>% 
+  dplyr::select(dt,score) %>% 
+  inner_join(df.dt_label, by = "dt") %>% 
+  .[['dt_label']]
+
+# Then gather and join on score
+df.score %>% 
+  dplyr::select(dt,score) %>% 
+  inner_join(df.dt_label, by = "dt") %>% 
+  ggplot(.,aes(x=dt_label,y=score, group=1)) +
+  geom_line(color="white") + 
+  geom_point(color="white") + 
+  geom_text(aes(label=paste0(round(score,0)),vjust=-1),color="white") +
+  theme_bw() +
+  theme(panel.background = element_rect(fill=rgb(52/255,60/255,72/255)),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x= element_text(colour = "white"),
+        plot.title = element_text(colour = "white"),
+        axis.text.y= element_text(colour = "white"),
+        axis.line = element_line(colour = "white"),
+        plot.background = element_rect(fill = rgb(52/255,60/255,72/255))) +
+  scale_y_continuous(limits=c(0,100),expand=c(0,0)) +
+  labs(x=NULL,y=NULL,title="Sport X Tan & Træn Index") 
+
+
+```
+
+
 # Openweather: Minutely Forecast
 
 ## Precipitation
