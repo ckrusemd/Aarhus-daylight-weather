@@ -11,6 +11,8 @@ library(ggplot2)
 library(tidyr)
 library(dplyr)
 library(lubridate)
+library(grid)
+library(png)
 ```
 
 ```{r echo=FALSE}
@@ -121,13 +123,14 @@ rescale_capped = function(values,from) {
 df.scores = res_json_hourly %>% 
   filter(dt<=ymd_hms(paste0(Sys.Date()," 00:00:00"),tz = "Europe/Copenhagen")+days(1)) %>% 
   dplyr::mutate(dt=format(dt,"%H:%M"),
-                pop=pop*100) %>% 
-  dplyr::mutate(rain=.$rain$`1h`)
+                pop=pop*100) 
+# %>% 
+  # dplyr::mutate(rain=.$rain$`1h`)
 
-df.scores$rain[is.na(df.scores$rain)] <- 0
+# df.scores$rain[is.na(df.scores$rain)] <- 0
 
 df.scores = df.scores %>% 
-  dplyr::mutate(rain_score=rescale_capped(rain,from = c(10,0))) %>% 
+  # dplyr::mutate(rain_score=rescale_capped(rain,from = c(10,0))) %>% 
   dplyr::mutate(temp_score=rescale_capped(temp,from = c(0,25))) %>% 
   dplyr::mutate(feels_like_score=rescale_capped(feels_like,from = c(0,25))) %>% 
   dplyr::mutate(humidity_score=rescale_capped(humidity,from = c(100,0))) %>% 
@@ -189,7 +192,7 @@ df.score %>%
 
 ```{r}
 
-order = c("temp","uvi","clouds","pop","rain")
+order = c("temp","uvi","clouds","pop")
 draw_scorecard(order)
 
 ```
@@ -230,13 +233,14 @@ draw_scorecard(order)
 df.scores = res_json_hourly %>% 
   filter(!hour(dt) %in% c(23,seq(0,6) )) %>% 
   dplyr::mutate(dt=format(dt,"%A %H:%M"),
-                pop=pop*100) %>% 
-  dplyr::mutate(rain=.$rain$`1h`)
+                pop=pop*100)
+# %>% 
+  # dplyr::mutate(rain=.$rain$`1h`)
 
-df.scores$rain[is.na(df.scores$rain)] <- 0
+# df.scores$rain[is.na(df.scores$rain)] <- 0
 
 df.scores = df.scores %>% 
-  dplyr::mutate(rain_score=rescale_capped(rain,from = c(10,0))) %>% 
+  # dplyr::mutate(rain_score=rescale_capped(rain,from = c(10,0))) %>% 
   dplyr::mutate(temp_score=rescale_capped(temp,from = c(0,25))) %>% 
   dplyr::mutate(feels_like_score=rescale_capped(feels_like,from = c(0,25))) %>% 
   dplyr::mutate(humidity_score=rescale_capped(humidity,from = c(100,0))) %>% 
@@ -298,19 +302,26 @@ draw_scorecard(factors)
 
 ## Today
 
-```{r}
+```{r fig.width=10,fig.height=5}
+library(png)
+library(grid)
+list.files()
 
+img <- readPNG("assets/SportX_logoorig.png")
+g <- rasterGrob(img, interpolate=TRUE)
 
 df.scores_sportx =  res_json_hourly %>% 
   filter(as.Date(dt,tz="Europe/Copenhagen") == Sys.Date()) %>% 
+  filter(hour(dt)<=20) %>% 
   dplyr::mutate(dt_label=format(dt,"%H:%M"),
-                pop=pop*100) %>% 
-  dplyr::mutate(rain=.$rain$`1h`)
+                pop=pop*100)
+# %>% 
+  # dplyr::mutate(rain=.$rain$`1h`)
 
-df.scores_sportx$rain[is.na(df.scores_sportx$rain)] <- 0
+# df.scores_sportx$rain[is.na(df.scores_sportx$rain)] <- 0
 
 df.scores_sportx = df.scores_sportx %>% 
-  dplyr::mutate(rain_score=rescale_capped(rain,from = c(10,0))) %>% 
+  # dplyr::mutate(rain_score=rescale_capped(rain,from = c(10,0))) %>% 
   dplyr::mutate(temp_score=rescale_capped(temp,from = c(0,25))) %>% 
   dplyr::mutate(feels_like_score=rescale_capped(feels_like,from = c(0,25))) %>% 
   dplyr::mutate(humidity_score=rescale_capped(humidity,from = c(100,0))) %>% 
@@ -337,9 +348,9 @@ df.dt_score = df.score %>%
 df.dt_label = df.score %>% 
   dplyr::mutate(dt_label=paste0(dt_label,"\n",round(temp,0),"°C\n")) %>% 
   dplyr::mutate(dt_label=paste0(dt_label,"UV: ",round(uvi,0),"\n")) %>% 
-  dplyr::mutate(dt_label=paste0(dt_label,"W: ",round(wind_speed,0),"m\\s\n")) %>% 
+  dplyr::mutate(dt_label=paste0(dt_label,"",round(wind_speed,0),"m\\s\n")) %>% 
   dplyr::mutate(dt_label=paste0(dt_label,"Regn: ",pop,"%\n")) %>% 
-  dplyr::mutate(dt_label=paste0(dt_label,"Skydække: ",clouds,"%\n")) %>% 
+  dplyr::mutate(dt_label=paste0(dt_label,"Sky: ",clouds,"%\n")) %>% 
   dplyr::select(dt,dt_label)
 
 
@@ -347,6 +358,9 @@ dt_label_vector = df.score %>%
   dplyr::select(dt,score) %>% 
   inner_join(df.dt_label, by = "dt") %>% 
   .[['dt_label']]
+
+index_start = dt_label_vector[1]
+index_stop = dt_label_vector[3]
 
 # Then gather and join on score
 df.score %>% 
@@ -359,15 +373,20 @@ df.score %>%
   theme_bw() +
   theme(panel.background = element_rect(fill=rgb(52/255,60/255,72/255)),
         panel.border = element_blank(),
-        panel.grid.major = element_blank(),
+        panel.grid.major = element_line(color=rgb(235, 235, 235, 100, maxColorValue = 255)),
         panel.grid.minor = element_blank(),
         axis.text.x= element_text(colour = "white"),
-        plot.title = element_text(colour = "white"),
+        panel.grid.major.x = element_blank(),
         axis.text.y= element_text(colour = "white"),
+        axis.title.y= element_text(colour = "white",size=20),
         axis.line = element_line(colour = "white"),
         plot.background = element_rect(fill = rgb(52/255,60/255,72/255))) +
-  scale_y_continuous(limits=c(0,100),expand=c(0,0)) +
-  labs(x=NULL,y=NULL,title="Sport X Tan & Træn Index") 
+  scale_y_continuous(limits=c(0,100),expand=c(0,0),breaks=seq(0,100,by=20)) +
+  # scale_x_discrete(breaks=NULL) +
+  labs(x=NULL,y="Sport X - Tan & Træn Index! (0-100)")  +
+  annotation_custom(g, xmin=index_start, xmax=index_stop, ymin=80, ymax=100)
+# +
+  # annotate(geom="text", label="- Tan og Træn Index!", x=index_stop, y=7.5, color="white",size=20)
 
 
 ```
@@ -383,13 +402,14 @@ df.scores_sportx =  res_json_hourly %>%
   filter(hour(dt)>=10) %>% 
   filter(hour(dt)<=20) %>% 
   dplyr::mutate(dt_label=format(dt,"%H:%M"),
-                pop=pop*100) %>% 
-  dplyr::mutate(rain=.$rain$`1h`)
+                pop=pop*100) 
+# %>% 
+  # dplyr::mutate(rain=.$rain$`1h`)
 
-df.scores_sportx$rain[is.na(df.scores_sportx$rain)] <- 0
+# df.scores_sportx$rain[is.na(df.scores_sportx$rain)] <- 0
 
 df.scores_sportx = df.scores_sportx %>% 
-  dplyr::mutate(rain_score=rescale_capped(rain,from = c(10,0))) %>% 
+  # dplyr::mutate(rain_score=rescale_capped(rain,from = c(10,0))) %>% 
   dplyr::mutate(temp_score=rescale_capped(temp,from = c(0,25))) %>% 
   dplyr::mutate(feels_like_score=rescale_capped(feels_like,from = c(0,25))) %>% 
   dplyr::mutate(humidity_score=rescale_capped(humidity,from = c(100,0))) %>% 
@@ -416,7 +436,7 @@ df.dt_score = df.score %>%
 df.dt_label = df.score %>% 
   dplyr::mutate(dt_label=paste0(dt_label,"\n",round(temp,0),"°C\n")) %>% 
   dplyr::mutate(dt_label=paste0(dt_label,"UV: ",round(uvi,0),"\n")) %>% 
-  dplyr::mutate(dt_label=paste0(dt_label,"W: ",round(wind_speed,0),"m/s\n")) %>% 
+  dplyr::mutate(dt_label=paste0(dt_label,"",round(wind_speed,0),"m/s\n")) %>% 
   dplyr::mutate(dt_label=paste0(dt_label,"Regn: ",pop,"%\n")) %>% 
   dplyr::mutate(dt_label=paste0(dt_label,"Sky: ",clouds,"%\n")) %>% 
   dplyr::select(dt,dt_label)
@@ -438,15 +458,18 @@ df.score %>%
   theme_bw() +
   theme(panel.background = element_rect(fill=rgb(52/255,60/255,72/255)),
         panel.border = element_blank(),
-        panel.grid.major = element_blank(),
+        panel.grid.major = element_line(color=rgb(235, 235, 235, 100, maxColorValue = 255)),
         panel.grid.minor = element_blank(),
         axis.text.x= element_text(colour = "white"),
-        plot.title = element_text(colour = "white"),
+        plot.title = element_text(colour = "white",size=50),
+        axis.title.y= element_text(colour = "white",size=20),
+        panel.grid.major.x = element_blank(),
         axis.text.y= element_text(colour = "white"),
         axis.line = element_line(colour = "white"),
         plot.background = element_rect(fill = rgb(52/255,60/255,72/255))) +
   scale_y_continuous(limits=c(0,100),expand=c(0,0)) +
-  labs(x=NULL,y=NULL,title="Sport X Tan & Træn Index") 
+  labs(x=NULL,y="Sport X - Tan & Træn Index! (0-100)")  +
+  annotation_custom(g, xmin=index_start, xmax=index_stop, ymin=80, ymax=100)
 
 
 ```
@@ -672,10 +695,10 @@ ggplot(res_json_daily,aes(x=dt,y=uvi)) +
 
 ```
 
+
+
+```{r eval=F}
 ## Rain
-
-```{r}
-
 ggplot(res_json_daily,aes(x=dt,y=rain)) +
   geom_line() +
   geom_vline(xintercept = Sys.time()) + 
@@ -774,11 +797,6 @@ res_json_daily %>%
   annotate("rect",ymin = 20,ymax = 30,fill="red",xmin = min(res_json_daily$dt),xmax = max(res_json_daily$dt),alpha=0.3) 
 
 ```
-
-
-
-
-
 
 
 
