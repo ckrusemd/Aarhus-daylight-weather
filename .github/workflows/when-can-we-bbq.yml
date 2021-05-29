@@ -23,6 +23,8 @@ jobs:
         run: sudo R CMD javareconf
       #- name: Install rvest
       #  run: Rscript -e 'install.packages(c("rvest"))'
+      - name: Install Package - patchwork
+        run: Rscript -e 'install.packages(c("patchwork"))'
       - name: Install Package - Suncalc
         run: Rscript -e 'install.packages(c("suncalc"))'
       - name: Install Packages - Bookdown
