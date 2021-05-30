@@ -385,7 +385,7 @@ df.score %>%
   scale_y_continuous(limits=c(0,100),expand=c(0,0),breaks=seq(0,100,by=20)) +
   # scale_x_discrete(breaks=NULL) +
   labs(x=NULL,y="Sport X - Tan & Træn Index (0-100)")  +
-  annotation_custom(g, xmin=index_start, xmax=index_stop, ymin=80, ymax=100)
+  annotation_custom(g, xmin=index_start, xmax=index_stop, ymin=5, ymax=20)
 # +
   # annotate(geom="text", label="- Tan og Træn Index!", x=index_stop, y=7.5, color="white",size=20)
 
@@ -473,7 +473,7 @@ df.score %>%
         plot.background = element_rect(fill = rgb(52/255,60/255,72/255))) +
   scale_y_continuous(limits=c(0,100),expand=c(0,0)) +
   labs(x=NULL,y="Sport X - Tan & Træn Index (0-100)")  +
-  annotation_custom(g, xmin=index_start, xmax=index_stop, ymin=80, ymax=100)
+  annotation_custom(g, xmin=index_start, xmax=index_stop, ymin=5, ymax=20)
 
 
 ```
