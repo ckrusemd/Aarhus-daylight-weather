@@ -447,6 +447,9 @@ dt_label_vector = df.score %>%
   inner_join(df.dt_label, by = "dt") %>% 
   .[['dt_label']]
 
+index_start = dt_label_vector[1]
+index_stop = dt_label_vector[3]
+
 # Then gather and join on score
 df.score %>% 
   dplyr::select(dt,score) %>% 
