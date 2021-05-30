@@ -26,7 +26,6 @@ wind-degree
 probability-of-precipitation
 openweather-daily-forecast
 uv-index
-rain
 probability-of-precipitation-1
 clouds
 wind-gusts
