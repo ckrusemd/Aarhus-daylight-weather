@@ -312,6 +312,7 @@ g <- rasterGrob(img, interpolate=TRUE)
 
 df.scores_sportx =  res_json_hourly %>% 
   filter(as.Date(dt,tz="Europe/Copenhagen") == Sys.Date()) %>% 
+  filter(hour(dt)>=10) %>% 
   filter(hour(dt)<=20) %>% 
   dplyr::mutate(dt_label=format(dt,"%H:%M"),
                 pop=pop*100)
