@@ -34,3 +34,4 @@ suncalc-daylight
 aarhus-next-14-days
 next-3-months
 section
+change-in-daylight-coming-weeks
