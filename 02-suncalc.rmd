@@ -18,7 +18,7 @@ library(ggplot2)
 
 current_dt = as.POSIXct(format(Sys.time()),tz="CET")
 current_date = as.Date(Sys.Date(),tz="CET")
-dates_in_2021 = seq.Date(from = dmy("01-01-2021"),to = dmy("31-12-2021"),by = "1 day")
+dates_in_2021 = seq.Date(from = dmy("01-01-2022"),to = dmy("31-12-2022"),by = "1 day")
 ```
 
 ## Aarhus: Next 14 Days
@@ -50,15 +50,15 @@ event_order.labels = c("Dawn",
 ### Next Week
 # df.dates.next_week =
   suncalc::getSunlightTimes(date = seq_next_14,
-                            lat = 56.1572,
-                            lon = 10.2107,
+                            lat = 55.7715024,
+                            lon = 12.4932282,
                             tz = "CET",
                             keep = event_order) %>% 
   gather(EventName,EventTime,dawn:night) %>% 
   dplyr::mutate(EventName=factor(EventName,levels=event_order,labels=event_order.labels)) %>% 
   ggplot(.,aes(y=date,x=EventName)) +
   geom_tile(aes(group=EventTime,fill=EventTime),color="white") +
-  geom_text(aes(label=strftime(EventTime,format = "%H:%M")),color="white",size=3) +
+  geom_text(aes(label=strftime(EventTime,format = "%H:%M:%S")),color="white",size=3) +
   theme_bw() +
   theme(legend.position = "null",
         axis.text.x = element_text(angle = 45, hjust=1)) +
@@ -116,7 +116,7 @@ ggplot(df.dates.next_3_months,aes(x=date,y = EventTime)) +
 
 ```
 
-## 2021
+## 2022
 
 ```{r eval=TRUE, include=TRUE}
 ### 2021 Dates
@@ -160,3 +160,58 @@ ggplot(df.dates_2021,aes(x=date,y = EventTime)) +
 ```
 
 
+## Change in daylight coming weeks
+
+```{r eval=TRUE, include=TRUE}
+
+### 2021 Dates
+df.dates_2021 =
+  suncalc::getSunlightTimes(date = dates_in_2021,
+                            lat = 56.1572,
+                            lon = 10.2107,
+                            tz = "CET",
+                            keep = c("solarNoon", 
+                                     "sunrise", 
+                                     "sunset", 
+                                     "sunriseEnd",
+                                     "sunsetStart", 
+                                     "dawn", 
+                                     "dusk", 
+                                     "nauticalDawn", 
+                                     "nauticalDusk",
+                                     "night", 
+                                     "goldenHourEnd", 
+                                     "goldenHour")) %>% 
+  gather(EventName,EventTime,solarNoon:goldenHour) %>% 
+  filter(date>=Sys.Date()) %>% 
+  filter(date<=Sys.Date()+months(1)) %>% 
+  group_by(EventName) %>% 
+  dplyr::mutate(StartTime=EventTime) %>% 
+  dplyr::mutate(StartTime=ifelse(StartTime==min(EventTime),StartTime,NA)) %>% 
+  tidyr::fill(StartTime) %>% 
+  group_by(EventName) %>% 
+  dplyr::mutate(StartTime=as.POSIXct(StartTime,origin="1970-01-01"),tz="CET") %>% 
+  dplyr::mutate(StartTime=ymd_hms(paste0(year(EventTime),"-",month(EventTime),"-",day(EventTime)," ",hour(StartTime),":",minute(StartTime),":",second(StartTime)),tz="CET")) %>% 
+  dplyr::mutate(EventTime=as.POSIXct(EventTime,tz="CET")) %>% 
+dplyr::mutate(MinutesChanged=round(as.numeric(difftime(EventTime,StartTime,units="mins")),digits=2)) %>% 
+  dplyr::mutate(DailyChange=MinutesChanged-lag(MinutesChanged))
+
+
+ggplot(df.dates_2021,aes(x=date,y = MinutesChanged)) +
+  scale_x_date(date_breaks = "3 days",date_labels = "%a %d") +
+  geom_point(aes(color=EventName)) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  geom_vline(xintercept = Sys.Date())  +
+  labs(x=NULL,y=NULL)
+
+
+ggplot(df.dates_2021,aes(x=date,y = DailyChange)) +
+  scale_x_date(date_breaks = "3 days",date_labels = "%a %d") +
+  geom_line(aes(color=EventName)) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  geom_vline(xintercept = Sys.Date())  +
+  labs(x=NULL,y=NULL)
+
+```
